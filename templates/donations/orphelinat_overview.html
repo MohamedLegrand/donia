@@ -1,0 +1,184 @@
+{% extends 'donations/orphelinat_base.html' %}
+{% load static %}
+
+{% block title %}Vue d'ensemble - Espace Orphelinat - DONIA{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-8">
+
+    <!-- En-tête -->
+    <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-xl bg-brand-600 text-white flex items-center justify-center">
+                <i data-lucide="building-2" class="w-7 h-7"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-xl sm:text-2xl font-extrabold font-heading text-slate-900">
+                        {{ user.orphanage_name|default:"Bonjour" }}
+                    </h1>
+                    {% if user.is_approved %}
+                        <span class="px-2.5 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                            <i data-lucide="shield-check" class="w-3 h-3 text-emerald-600"></i> Structure Validée
+                        </span>
+                    {% endif %}
+                </div>
+                <p class="text-xs text-slate-500 mt-1">Bienvenue sur votre espace de gestion des besoins et des dons.</p>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            <a href="{% url 'need_create' %}" class="flex-1 sm:flex-none px-4 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-xs transition-colors flex items-center justify-center gap-1.5">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i> Publier un besoin
+            </a>
+            <a href="{% url 'received_donations' %}" class="flex-1 sm:flex-none px-4 py-2.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold transition-colors flex items-center justify-center gap-1.5">
+                <i data-lucide="hand-coins" class="w-4 h-4 text-slate-400"></i> Voir les dons reçus
+            </a>
+        </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+            <div>
+                <span class="text-xs font-medium text-slate-500 block mb-1">Besoins Actifs</span>
+                <span class="text-2xl font-black font-heading text-slate-900">{{ stats.active_needs }}</span>
+                <span class="text-[11px] text-slate-400 font-semibold block mt-1">sur {{ stats.total_needs }} publiés</span>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
+                <i data-lucide="clipboard-list" class="w-6 h-6"></i>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+            <div>
+                <span class="text-xs font-medium text-slate-500 block mb-1">Total Collecté</span>
+                <span class="text-2xl font-black font-heading text-slate-900">{{ stats.total_collected|floatformat:0 }} <span class="text-xs font-bold text-slate-500">FCFA</span></span>
+                <span class="text-[11px] text-emerald-600 font-semibold block mt-1">Tous besoins confondus</span>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <i data-lucide="wallet" class="w-6 h-6"></i>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+            <div>
+                <span class="text-xs font-medium text-slate-500 block mb-1">Dons Reçus</span>
+                <span class="text-2xl font-black font-heading text-slate-900">{{ stats.donations_count }}</span>
+                {% if stats.pending_donations > 0 %}
+                    <span class="text-[11px] text-amber-600 font-semibold block mt-1">{{ stats.pending_donations }} en attente de validation</span>
+                {% else %}
+                    <span class="text-[11px] text-slate-400 font-semibold block mt-1">Tous réceptionnés</span>
+                {% endif %}
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
+                <i data-lucide="hand-coins" class="w-6 h-6"></i>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+            <div>
+                <span class="text-xs font-medium text-slate-500 block mb-1">Enfants Concernés</span>
+                <span class="text-2xl font-black font-heading text-slate-900">{{ stats.children_helped }}</span>
+                <span class="text-[11px] text-brand-600 font-semibold block mt-1">Sur l'ensemble des besoins</span>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                <i data-lucide="users" class="w-6 h-6"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+        <!-- Besoins à prioriser -->
+        <div class="lg:col-span-7 space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-bold font-heading text-slate-900 flex items-center gap-2">
+                        <i data-lucide="alert-triangle" class="w-4 h-4 text-brand-600"></i>
+                        Besoins à prioriser
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Vos besoins actifs classés par score d'urgence.</p>
+                </div>
+                <a href="{% url 'my_needs' %}" class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1">
+                    Gérer mes besoins <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                </a>
+            </div>
+
+            {% if urgent_needs %}
+            <div class="space-y-3">
+                {% for need in urgent_needs %}
+                <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-xs flex items-center justify-between gap-4">
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="px-2 py-0.5 rounded text-[11px] font-bold
+                                {% if need.priority_color == 'red' %}bg-red-50 text-red-700 border border-red-200
+                                {% elif need.priority_color == 'amber' %}bg-amber-50 text-amber-800 border border-amber-200
+                                {% else %}bg-slate-100 text-slate-700 border border-slate-200{% endif %}">
+                                {{ need.priority_label }}
+                            </span>
+                            <span class="text-[11px] text-slate-400 font-semibold">{{ need.coverage_percent }}% financé</span>
+                        </div>
+                        <p class="font-bold text-slate-900 text-xs truncate">{{ need.title }}</p>
+                        <p class="text-[11px] text-slate-500">{{ need.category.name }} • {{ need.children_count }} enfants</p>
+                    </div>
+                    <a href="{% url 'need_edit' need.pk %}" class="shrink-0 p-2 rounded-lg bg-slate-100 hover:bg-brand-50 hover:text-brand-700 text-slate-500 transition-colors" title="Modifier">
+                        <i data-lucide="pencil" class="w-4 h-4"></i>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="bg-white rounded-xl border border-dashed border-slate-300 p-10 text-center">
+                <i data-lucide="clipboard-check" class="w-8 h-8 text-slate-300 mx-auto mb-2"></i>
+                <p class="text-xs text-slate-500 mb-3">Vous n'avez aucun besoin actif pour le moment.</p>
+                <a href="{% url 'need_create' %}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold transition-colors">
+                    <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Publier mon premier besoin
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Dons récents -->
+        <div class="lg:col-span-5 space-y-4">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-bold font-heading text-slate-900 flex items-center gap-2">
+                    <i data-lucide="history" class="w-4 h-4 text-brand-600"></i>
+                    Dons récents
+                </h2>
+                <a href="{% url 'received_donations' %}" class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1">
+                    Tout voir <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                </a>
+            </div>
+
+            <div class="bg-white rounded-xl border border-slate-200 shadow-xs divide-y divide-slate-100">
+                {% if recent_donations %}
+                    {% for donation in recent_donations %}
+                    <div class="p-4 flex items-center justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="text-xs font-bold text-slate-900 truncate">{{ donation.donateur.get_full_name|default:donation.donateur.username }}</p>
+                            <p class="text-[11px] text-slate-500 truncate">{{ donation.need.title }}</p>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <p class="text-xs font-bold text-slate-900">{{ donation.amount_display }}</p>
+                            {% if donation.status == 'receptionne' %}
+                                <span class="text-[10px] text-emerald-600 font-semibold">Réceptionné</span>
+                            {% else %}
+                                <span class="text-[10px] text-amber-600 font-semibold">En attente</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="p-10 text-center">
+                    <i data-lucide="inbox" class="w-8 h-8 text-slate-300 mx-auto mb-2"></i>
+                    <p class="text-xs text-slate-500">Aucun don reçu pour le moment.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

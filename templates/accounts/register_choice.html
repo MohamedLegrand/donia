@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Choisir votre profil - DONIA{% endblock %}
+
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl w-full mx-auto">
+        
+        <!-- Bouton Retour à l'accueil -->
+        <div class="mb-6">
+            <a href="{% url 'home' %}" class="inline-flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-brand-600 transition-colors group">
+                <i data-lucide="arrow-left" class="w-4 h-4 group-hover:-translate-x-1 transition-transform"></i>
+                <span>Retour à l'accueil</span>
+            </a>
+        </div>
+
+        <div class="text-center max-w-xl mx-auto mb-10">
+            <a href="{% url 'home' %}" class="inline-block mb-3">
+                <img src="{% static 'images/logo.jpg' %}" alt="Logo DONIA" class="h-14 w-14 rounded-2xl mx-auto object-cover border border-slate-200 shadow-xs">
+            </a>
+            <h1 class="text-2xl sm:text-3xl font-black font-heading text-slate-900">Rejoindre la communauté DONIA</h1>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">Sélectionnez le type d'inscription qui correspond à votre démarche</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Carte Donateur -->
+            <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:border-brand-300 hover:shadow-md transition-all flex flex-col justify-between group">
+                <div>
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-6 group-hover:scale-105 transition-transform">
+                        <i data-lucide="heart" class="w-6 h-6"></i>
+                    </div>
+                    <h2 class="text-lg font-bold font-heading text-slate-900 mb-2">Je suis un Donateur</h2>
+                    <p class="text-xs text-slate-500 leading-relaxed mb-6">
+                        Consultez les besoins urgents des orphelinats, réalisez des dons financiers ou matériels et suivez l'impact avec reçus officiels.
+                    </p>
+                    
+                    <div class="p-3 rounded-xl bg-emerald-50/70 border border-emerald-100 text-emerald-800 text-xs font-semibold flex items-center gap-2 mb-6">
+                        <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600"></i> Accès direct & immédiat
+                    </div>
+                </div>
+
+                <a href="{% url 'register_donateur' %}" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-4 rounded-xl text-center text-xs shadow-xs transition-colors flex items-center justify-center gap-2">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i> Inscription Donateur
+                </a>
+            </div>
+
+            <!-- Carte Responsable -->
+            <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:border-brand-300 hover:shadow-md transition-all flex flex-col justify-between group">
+                <div>
+                    <div class="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center mb-6 group-hover:scale-105 transition-transform">
+                        <i data-lucide="building-2" class="w-6 h-6"></i>
+                    </div>
+                    <h2 class="text-lg font-bold font-heading text-slate-900 mb-2">Je gère un Orphelinat</h2>
+                    <p class="text-xs text-slate-500 leading-relaxed mb-6">
+                        Exprimez les besoins de vos pensionnaires, organisez la collecte de vivres ou fonds et attestez de la bonne réception sur le terrain.
+                    </p>
+
+                    <div class="p-3 rounded-xl bg-amber-50/70 border border-amber-100 text-amber-800 text-xs font-semibold flex items-center gap-2 mb-6">
+                        <i data-lucide="shield-alert" class="w-4 h-4 text-amber-600"></i> Validation sous 24h par l'équipe
+                    </div>
+                </div>
+
+                <a href="{% url 'register_responsable' %}" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 px-4 rounded-xl text-center text-xs shadow-xs transition-colors flex items-center justify-center gap-2">
+                    <i data-lucide="file-signature" class="w-4 h-4"></i> Inscrire mon Orphelinat
+                </a>
+            </div>
+
+        </div>
+
+        <div class="text-center mt-8 text-xs text-slate-500">
+            Vous avez déjà un compte ? <a href="{% url 'login' %}" class="font-bold text-brand-600 hover:text-brand-700">Se connecter</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

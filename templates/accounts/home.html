@@ -1,0 +1,513 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}DONIA - Plateforme de Gestion des Besoins et Dons des Orphelinats{% endblock %}
+
+{% block content %}
+<!-- ===================================================
+     HERO SECTION (Clair, Propre et Institutionnel)
+     =================================================== -->
+<section class="bg-white border-b border-slate-200 py-16 lg:py-24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            <!-- Colonne Texte & Actions -->
+            <div class="lg:col-span-7 space-y-6">
+                
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-brand-50 border border-brand-200 text-brand-700 text-xs font-semibold">
+                    <i data-lucide="activity" class="w-3.5 h-3.5 text-brand-600"></i>
+                    <span>Plateforme d'Allocation et de Traçabilité des Dons</span>
+                </div>
+
+                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-heading text-slate-900 tracking-tight leading-tight">
+                    Centraliser les besoins des orphelinats, optimiser la distribution des dons.
+                </h1>
+
+                <p class="text-base text-slate-600 leading-relaxed max-w-2xl">
+                    DONIA permet aux structures d'accueil d'exprimer leurs nécessités réelles et offre aux donateurs une visibilité complète sur la criticité des demandes grâce à des algorithmes de priorisation multicritère.
+                </p>
+
+                <!-- Boutons d'Action -->
+                <div class="flex flex-col sm:flex-row items-center gap-3 pt-2">
+                    {% if not user.is_authenticated %}
+                        <a href="{% url 'register_donateur' %}" class="w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-3 rounded-lg shadow-sm transition-colors text-sm flex items-center justify-center gap-2">
+                            <i data-lucide="heart" class="w-4 h-4"></i> Faire un don
+                        </a>
+                        <a href="{% url 'register_responsable' %}" class="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-700 font-semibold px-6 py-3 rounded-lg border border-slate-300 transition-colors text-sm flex items-center justify-center gap-2">
+                            <i data-lucide="building-2" class="w-4 h-4 text-slate-500"></i> Espace orphelinat
+                        </a>
+                    {% else %}
+                        <a href="{% url 'profile' %}" class="w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-3 rounded-lg shadow-sm transition-colors text-sm flex items-center justify-center gap-2">
+                            <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Accéder à mon tableau de bord
+                        </a>
+                    {% endif %}
+                </div>
+
+                <!-- Garanties & Engagements -->
+                <div class="pt-4 flex flex-wrap items-center gap-6 text-xs text-slate-500 font-medium">
+                    <span class="flex items-center gap-1.5"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> Orphelinats agréés</span>
+                    <span class="flex items-center gap-1.5"><i data-lucide="file-check" class="w-4 h-4 text-emerald-600"></i> Reçus de dons certifiés</span>
+                    <span class="flex items-center gap-1.5"><i data-lucide="sliders" class="w-4 h-4 text-emerald-600"></i> Priorisation algorithmique</span>
+                </div>
+            </div>
+
+            <!-- Colonne Carte d'Aperçu Institutionnelle -->
+            <div class="lg:col-span-5">
+                <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm">
+                    
+                    <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+                        <div class="flex items-center gap-3">
+                            <img src="{% static 'images/logo.jpg' %}" alt="DONIA" class="h-9 w-9 rounded-md object-cover border border-slate-200">
+                            <div>
+                                <h3 class="text-xs font-bold text-slate-900">Tableau de Bord des Urgences</h3>
+                                <p class="text-[11px] text-slate-500">Suivi consolidé des besoins</p>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded text-[11px] font-semibold bg-emerald-100 text-emerald-800 flex items-center gap-1">
+                            <i data-lucide="check-circle" class="w-3 h-3 text-emerald-600"></i> Opérationnel
+                        </span>
+                    </div>
+
+                    <!-- Exemple de besoin priorisé -->
+                    <div class="mt-4 p-4 rounded-xl bg-white border border-slate-200">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-red-100 text-red-800 flex items-center gap-1">
+                                <i data-lucide="alert-octagon" class="w-3 h-3 text-red-600"></i> Priorité Critique
+                            </span>
+                            <span class="text-[11px] font-medium text-slate-500">Calcul d'Urgence : 94%</span>
+                        </div>
+                        <h4 class="font-bold text-slate-900 text-xs">Apport Nutritionnel & Lait Infantile</h4>
+                        <p class="text-[11px] text-slate-500 mt-0.5">Orphelinat La Compassion • 38 nourrissons</p>
+
+                        <div class="mt-3">
+                            <div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-1">
+                                <span>Progression : 70%</span>
+                                <span>350.000 / 500.000 FCFA</span>
+                            </div>
+                            <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-brand-600 rounded-full" style="width: 70%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Indicateurs Clés -->
+                    <div class="grid grid-cols-2 gap-3 mt-4">
+                        <div class="p-3 rounded-xl bg-white border border-slate-200">
+                            <span class="block text-xl font-bold font-heading text-slate-900">100%</span>
+                            <span class="text-[11px] text-slate-500 font-medium">Traçabilité des transferts</span>
+                        </div>
+                        <div class="p-3 rounded-xl bg-white border border-slate-200">
+                            <span class="block text-xl font-bold font-heading text-slate-900">&lt; 24h</span>
+                            <span class="text-[11px] text-slate-500 font-medium">Délai d'audit des comptes</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- ===================================================
+     BANDEAU CHIFFRES CLÉS (Preuve Sociale)
+     =================================================== -->
+<section class="bg-brand-600 py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+
+            <div class="flex flex-col items-center gap-1.5">
+                <i data-lucide="building-2" class="w-5 h-5 text-brand-200"></i>
+                <span class="block text-2xl sm:text-3xl font-extrabold font-heading text-white">120+</span>
+                <span class="text-brand-100 text-[11px] sm:text-xs font-semibold uppercase tracking-wide">Orphelinats accompagnés</span>
+            </div>
+
+            <div class="flex flex-col items-center gap-1.5">
+                <i data-lucide="users" class="w-5 h-5 text-brand-200"></i>
+                <span class="block text-2xl sm:text-3xl font-extrabold font-heading text-white">3 200+</span>
+                <span class="text-brand-100 text-[11px] sm:text-xs font-semibold uppercase tracking-wide">Donateurs actifs</span>
+            </div>
+
+            <div class="flex flex-col items-center gap-1.5">
+                <i data-lucide="hand-heart" class="w-5 h-5 text-brand-200"></i>
+                <span class="block text-2xl sm:text-3xl font-extrabold font-heading text-white">850+</span>
+                <span class="text-brand-100 text-[11px] sm:text-xs font-semibold uppercase tracking-wide">Besoins couverts</span>
+            </div>
+
+            <div class="flex flex-col items-center gap-1.5">
+                <i data-lucide="shield-check" class="w-5 h-5 text-brand-200"></i>
+                <span class="block text-2xl sm:text-3xl font-extrabold font-heading text-white">100%</span>
+                <span class="text-brand-100 text-[11px] sm:text-xs font-semibold uppercase tracking-wide">Traçabilité des dons</span>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- ===================================================
+     SECTION COMMENT ÇA MARCHE (Workflow)
+     =================================================== -->
+<section id="fonctionnement" class="py-16 bg-slate-50 border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="text-center max-w-2xl mx-auto mb-12">
+            <span class="text-xs font-bold uppercase tracking-wider text-brand-600">Méthodologie</span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold font-heading text-slate-900 mt-1">Processus de gestion des dons</h2>
+            <p class="text-slate-600 text-xs sm:text-sm mt-2">Un circuit transparent et vérifiable à chaque étape du parcours.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-xs">
+                <div class="w-10 h-10 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center mb-4">
+                    <i data-lucide="file-plus-2" class="w-5 h-5"></i>
+                </div>
+                <h3 class="text-sm font-bold text-slate-900 mb-1.5">1. Publication du besoin</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">
+                    L'orphelinat enregistré soumet une demande détaillée précisant les quantités, les délais et le public ciblé.
+                </p>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-xs">
+                <div class="w-10 h-10 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center mb-4">
+                    <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                </div>
+                <h3 class="text-sm font-bold text-slate-900 mb-1.5">2. Scoring multicritère</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">
+                    L'algorithme analyse l'ancienneté, l'impact vital et les dons déjà perçus pour établir un niveau de priorité impartial.
+                </p>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-xs">
+                <div class="w-10 h-10 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center mb-4">
+                    <i data-lucide="credit-card" class="w-5 h-5"></i>
+                </div>
+                <h3 class="text-sm font-bold text-slate-900 mb-1.5">3. Contribution sécurisée</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">
+                    Le donateur alloue sa contribution financière ou matérielle et télécharge son reçu de don officiel en PDF.
+                </p>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-xs">
+                <div class="w-10 h-10 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center mb-4">
+                    <i data-lucide="clipboard-check" class="w-5 h-5"></i>
+                </div>
+                <h3 class="text-sm font-bold text-slate-900 mb-1.5">4. Confirmation terrain</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">
+                    L'orphelinat atteste de la réception effective du don, clôturant le besoin et actualisant les rapports d'impact.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- ===================================================
+     SECTION MODULES INTELLIGENTS & ALGORITHMES
+     =================================================== -->
+<section id="technologie" class="py-16 bg-white border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="text-center max-w-2xl mx-auto mb-12">
+            <span class="text-xs font-bold uppercase tracking-wider text-brand-600">Ingénierie & Analyse</span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold font-heading text-slate-900 mt-1">Fonctionnalités décisionnelles</h2>
+            <p class="text-slate-600 text-xs sm:text-sm mt-2">Des outils d'analyse de données intégrés pour une gestion équitable des ressources.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            
+            <div class="p-5 rounded-xl bg-slate-50 border border-slate-200">
+                <div class="w-9 h-9 rounded-lg bg-white border border-slate-200 text-brand-600 flex items-center justify-center mb-3.5 shadow-2xs">
+                    <i data-lucide="scale" class="w-4 h-4"></i>
+                </div>
+                <h3 class="font-bold text-slate-900 text-xs mb-1.5">Priorisation Automatisée</h3>
+                <p class="text-[11px] text-slate-500 leading-relaxed">
+                    Calcul d'un indice de criticité basé sur des pondérations mathématiques pour éviter l'arbitraire dans le classement des requêtes.
+                </p>
+            </div>
+
+            <div class="p-5 rounded-xl bg-slate-50 border border-slate-200">
+                <div class="w-9 h-9 rounded-lg bg-white border border-slate-200 text-brand-600 flex items-center justify-center mb-3.5 shadow-2xs">
+                    <i data-lucide="target" class="w-4 h-4"></i>
+                </div>
+                <h3 class="font-bold text-slate-900 text-xs mb-1.5">Recommandation Ciblée</h3>
+                <p class="text-[11px] text-slate-500 leading-relaxed">
+                    Orientation des donateurs vers des projets alignés avec leurs critères géographiques et thématiques régulières.
+                </p>
+            </div>
+
+            <div class="p-5 rounded-xl bg-slate-50 border border-slate-200">
+                <div class="w-9 h-9 rounded-lg bg-white border border-slate-200 text-brand-600 flex items-center justify-center mb-3.5 shadow-2xs">
+                    <i data-lucide="shield-alert" class="w-4 h-4"></i>
+                </div>
+                <h3 class="font-bold text-slate-900 text-xs mb-1.5">Détection des Délais Critiques</h3>
+                <p class="text-[11px] text-slate-500 leading-relaxed">
+                    Identification des besoins non couverts après un seuil temporel donné pour les revaloriser dans les flux de consultation.
+                </p>
+            </div>
+
+            <div class="p-5 rounded-xl bg-slate-50 border border-slate-200">
+                <div class="w-9 h-9 rounded-lg bg-white border border-slate-200 text-brand-600 flex items-center justify-center mb-3.5 shadow-2xs">
+                    <i data-lucide="edit-3" class="w-4 h-4"></i>
+                </div>
+                <h3 class="font-bold text-slate-900 text-xs mb-1.5">Aide à la Catégorisation</h3>
+                <p class="text-[11px] text-slate-500 leading-relaxed">
+                    Traitement du texte lors de la création pour suggérer la nomenclature et les unités de mesure adaptées.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- ===================================================
+     SECTION BESOINS EN COURS (Liste Sobre)
+     =================================================== -->
+<section id="urgences" class="py-16 bg-slate-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+            <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-brand-600">Registre Actif</span>
+                <h2 class="text-2xl font-extrabold font-heading text-slate-900 mt-1">Besoins récents en attente de soutien</h2>
+            </div>
+            <a href="{% url 'register_donateur' %}" class="inline-flex items-center gap-1.5 text-xs font-bold text-brand-600 hover:text-brand-700">
+                Consulter tous les besoins <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-red-100 text-red-800">
+                            Urgence Haute
+                        </span>
+                        <span class="text-[11px] text-slate-500 font-medium">Santé & Médicaments</span>
+                    </div>
+                    <h3 class="font-bold text-slate-900 text-xs mb-1">Traitements antipaludéens & pansements</h3>
+                    <p class="text-[11px] text-slate-500 mb-4">Orphelinat La Colombe • Dakar</p>
+
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[11px] font-semibold text-slate-600">
+                            <span>Couverture : 80%</span>
+                            <span>200.000 / 250.000 FCFA</span>
+                        </div>
+                        <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-brand-600 rounded-full" style="width: 80%;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pt-4 mt-4 border-t border-slate-100">
+                    <a href="{% url 'register_donateur' %}" class="w-full py-2 px-3 rounded-lg bg-slate-100 hover:bg-brand-600 hover:text-white text-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors">
+                        <i data-lucide="hand-heart" class="w-3.5 h-3.5"></i> Contribuer
+                    </a>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-800">
+                            Urgence Moyenne
+                        </span>
+                        <span class="text-[11px] text-slate-500 font-medium">Éducation</span>
+                    </div>
+                    <h3 class="font-bold text-slate-900 text-xs mb-1">Manuels scolaires & fournitures élémentaires</h3>
+                    <p class="text-[11px] text-slate-500 mb-4">Maison des Enfants • Thiès</p>
+
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[11px] font-semibold text-slate-600">
+                            <span>Couverture : 45%</span>
+                            <span>180.000 / 400.000 FCFA</span>
+                        </div>
+                        <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-brand-600 rounded-full" style="width: 45%;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pt-4 mt-4 border-t border-slate-100">
+                    <a href="{% url 'register_donateur' %}" class="w-full py-2 px-3 rounded-lg bg-slate-100 hover:bg-brand-600 hover:text-white text-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors">
+                        <i data-lucide="hand-heart" class="w-3.5 h-3.5"></i> Contribuer
+                    </a>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-700">
+                            Standard
+                        </span>
+                        <span class="text-[11px] text-slate-500 font-medium">Alimentation</span>
+                    </div>
+                    <h3 class="font-bold text-slate-900 text-xs mb-1">Denrées de base (Riz, Huile, Céréales)</h3>
+                    <p class="text-[11px] text-slate-500 mb-4">Centre Espoir • Saint-Louis</p>
+
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[11px] font-semibold text-slate-600">
+                            <span>Couverture : 20%</span>
+                            <span>60.000 / 300.000 FCFA</span>
+                        </div>
+                        <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-brand-600 rounded-full" style="width: 20%;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pt-4 mt-4 border-t border-slate-100">
+                    <a href="{% url 'register_donateur' %}" class="w-full py-2 px-3 rounded-lg bg-slate-100 hover:bg-brand-600 hover:text-white text-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors">
+                        <i data-lucide="hand-heart" class="w-3.5 h-3.5"></i> Contribuer
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- ===================================================
+     SECTION CONFIANCE & TRANSPARENCE
+     =================================================== -->
+<section id="confiance" class="py-16 bg-white border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <div class="text-center max-w-2xl mx-auto mb-12">
+            <span class="text-xs font-bold uppercase tracking-wider text-brand-600">Confiance & Transparence</span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold font-heading text-slate-900 mt-1">Pourquoi choisir DONIA</h2>
+            <p class="text-slate-600 text-xs sm:text-sm mt-2">Un cadre rigoureux pensé pour rassurer les donateurs et responsabiliser les structures d'accueil.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+            <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                <div class="w-10 h-10 rounded-lg bg-white border border-slate-200 text-brand-600 flex items-center justify-center mb-4 shadow-2xs">
+                    <i data-lucide="shield-check" class="w-5 h-5"></i>
+                </div>
+                <h3 class="text-sm font-bold text-slate-900 mb-1.5">Vérification rigoureuse</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">
+                    Chaque orphelinat inscrit est soumis à un contrôle manuel de ses justificatifs et agréments avant l'activation de son compte.
+                </p>
+            </div>
+
+            <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                <div class="w-10 h-10 rounded-lg bg-white border border-slate-200 text-brand-600 flex items-center justify-center mb-4 shadow-2xs">
+                    <i data-lucide="file-check" class="w-5 h-5"></i>
+                </div>
+                <h3 class="text-sm font-bold text-slate-900 mb-1.5">Reçus de dons certifiés</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">
+                    Chaque contribution génère un reçu officiel dématérialisé, garantissant une traçabilité complète de chaque transfert.
+                </p>
+            </div>
+
+            <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                <div class="w-10 h-10 rounded-lg bg-white border border-slate-200 text-brand-600 flex items-center justify-center mb-4 shadow-2xs">
+                    <i data-lucide="scale" class="w-5 h-5"></i>
+                </div>
+                <h3 class="text-sm font-bold text-slate-900 mb-1.5">Priorisation impartiale</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">
+                    Un algorithme multicritère classe objectivement les besoins selon leur criticité, sans arbitraire ni favoritisme.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- ===================================================
+     SECTION FAQ
+     =================================================== -->
+<section id="faq" class="py-16 bg-slate-50 border-b border-slate-200">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <div class="text-center max-w-2xl mx-auto mb-12">
+            <span class="text-xs font-bold uppercase tracking-wider text-brand-600">Questions Fréquentes</span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold font-heading text-slate-900 mt-1">Tout ce qu'il faut savoir</h2>
+            <p class="text-slate-600 text-xs sm:text-sm mt-2">Les réponses aux questions les plus posées par les donateurs et les responsables d'orphelinats.</p>
+        </div>
+
+        <div class="space-y-3">
+
+            <details class="group bg-white rounded-xl border border-slate-200 p-5 [&_summary::-webkit-details-marker]:hidden">
+                <summary class="flex items-center justify-between cursor-pointer text-sm font-bold text-slate-900">
+                    Comment devenir donateur sur DONIA ?
+                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 group-open:rotate-180 transition-transform"></i>
+                </summary>
+                <p class="text-xs text-slate-500 leading-relaxed mt-3">
+                    Il suffit de créer un compte donateur en quelques instants : l'accès est immédiat et vous permet de consulter les besoins répertoriés et de contribuer directement.
+                </p>
+            </details>
+
+            <details class="group bg-white rounded-xl border border-slate-200 p-5 [&_summary::-webkit-details-marker]:hidden">
+                <summary class="flex items-center justify-between cursor-pointer text-sm font-bold text-slate-900">
+                    Comment un orphelinat peut-il s'inscrire ?
+                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 group-open:rotate-180 transition-transform"></i>
+                </summary>
+                <p class="text-xs text-slate-500 leading-relaxed mt-3">
+                    Le responsable crée un compte dédié et transmet le justificatif officiel de l'établissement. Un administrateur vérifie ensuite le dossier avant d'activer l'accès.
+                </p>
+            </details>
+
+            <details class="group bg-white rounded-xl border border-slate-200 p-5 [&_summary::-webkit-details-marker]:hidden">
+                <summary class="flex items-center justify-between cursor-pointer text-sm font-bold text-slate-900">
+                    Les dons sont-ils sécurisés et tracés ?
+                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 group-open:rotate-180 transition-transform"></i>
+                </summary>
+                <p class="text-xs text-slate-500 leading-relaxed mt-3">
+                    Oui. Chaque contribution est enregistrée, associée à un reçu certifié, et fait l'objet d'une confirmation de réception par l'orphelinat bénéficiaire.
+                </p>
+            </details>
+
+            <details class="group bg-white rounded-xl border border-slate-200 p-5 [&_summary::-webkit-details-marker]:hidden">
+                <summary class="flex items-center justify-between cursor-pointer text-sm font-bold text-slate-900">
+                    Combien de temps prend la validation d'un compte responsable ?
+                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 group-open:rotate-180 transition-transform"></i>
+                </summary>
+                <p class="text-xs text-slate-500 leading-relaxed mt-3">
+                    L'audit des pièces justificatives est généralement effectué en moins de 24 heures par l'équipe d'administration.
+                </p>
+            </details>
+
+            <details class="group bg-white rounded-xl border border-slate-200 p-5 [&_summary::-webkit-details-marker]:hidden">
+                <summary class="flex items-center justify-between cursor-pointer text-sm font-bold text-slate-900">
+                    Puis-je choisir précisément le besoin auquel je contribue ?
+                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 group-open:rotate-180 transition-transform"></i>
+                </summary>
+                <p class="text-xs text-slate-500 leading-relaxed mt-3">
+                    Oui, chaque besoin est présenté individuellement avec son niveau de priorité, son taux de couverture et l'orphelinat concerné, afin d'orienter votre choix.
+                </p>
+            </details>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- ===================================================
+     CTA INSTITUTIONNEL
+     =================================================== -->
+<section class="py-16 bg-white border-t border-slate-200">
+    <div class="max-w-4xl mx-auto px-4 text-center space-y-6">
+        <h2 class="text-2xl sm:text-3xl font-extrabold font-heading text-slate-900">
+            Participer à la gestion solidaire
+        </h2>
+        <p class="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto leading-relaxed">
+            Rejoignez le réseau DONIA pour soutenir des structures auditées ou inscrire votre établissement au registre officiel.
+        </p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <a href="{% url 'register_donateur' %}" class="w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-3 rounded-lg shadow-sm text-xs transition-colors flex items-center justify-center gap-2">
+                <i data-lucide="user-plus" class="w-4 h-4"></i> Inscription Donateur
+            </a>
+            <a href="{% url 'register_responsable' %}" class="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-700 font-semibold px-6 py-3 rounded-lg border border-slate-300 text-xs transition-colors flex items-center justify-center gap-2">
+                <i data-lucide="building" class="w-4 h-4 text-slate-500"></i> Enregistrer un Orphelinat
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends 'donations/orphelinat_base.html' %}
+{% load static %}
+
+{% block title %}Profil de l'orphelinat - DONIA{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+    <div>
+        <h1 class="text-xl sm:text-2xl font-extrabold font-heading text-slate-900">Profil de l'orphelinat</h1>
+        <p class="text-xs text-slate-500 mt-1">Gérez les informations de votre structure et vos coordonnées.</p>
+    </div>
+
+    {% include 'accounts/_profile_form.html' %}
+</div>
+{% endblock %}

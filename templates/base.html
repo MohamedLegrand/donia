@@ -1,0 +1,220 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}DONIA - Plateforme de Gestion des Besoins et Dons des Orphelinats{% endblock %}</title>
+    
+    <!-- Google Fonts Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Tailwind CSS v3 CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased selection:bg-brand-100 selection:text-brand-900 font-sans">
+
+    <!-- Header / Navbar Principal Agrandie et Structurée -->
+    {% block navbar %}
+    <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs transition-all">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16 sm:h-18">
+
+                <!-- Logo & Identité Visuelle -->
+                <a href="{% url 'home' %}" class="flex items-center gap-2.5 group min-w-0">
+                    <img src="{% static 'images/logo.jpg' %}" alt="Logo DONIA" class="h-9 w-9 sm:h-10 sm:w-10 rounded-lg object-cover border-2 border-slate-200 shadow-sm group-hover:scale-105 transition-transform duration-300 shrink-0">
+                    <div class="flex flex-col min-w-0">
+                        <span class="text-base sm:text-lg font-black font-heading tracking-tight text-slate-900 flex items-center gap-2 whitespace-nowrap">
+                            DONIA
+                           
+                        </span>
+                        <span class="hidden xl:block text-[11px] text-slate-500 font-medium -mt-0.5 whitespace-nowrap truncate">Gestion des Besoins & des Dons des Orphelinats</span>
+                    </div>
+                </a>
+
+                <!-- Liens de navigation -->
+                <nav class="hidden lg:flex items-center gap-5 xl:gap-6 font-semibold text-slate-600 text-xs xl:text-sm">
+                    <a href="{% url 'home' %}" class="hover:text-brand-600 transition-colors py-2 flex items-center gap-1.5 whitespace-nowrap">
+                        <i data-lucide="home" class="w-3.5 h-3.5 text-brand-600"></i> Accueil
+                    </a>
+                    <a href="{% url 'home' %}#fonctionnement" class="hover:text-brand-600 transition-colors py-2 whitespace-nowrap">Fonctionnement</a>
+                    <a href="{% url 'home' %}#technologie" class="hover:text-brand-600 transition-colors py-2 flex items-center gap-1.5 whitespace-nowrap">
+                        <i data-lucide="cpu" class="w-3.5 h-3.5 text-brand-500"></i> Modules
+                    </a>
+                    <a href="{% url 'home' %}#urgences" class="hover:text-brand-600 transition-colors py-2 whitespace-nowrap">Besoins</a>
+                    <a href="{% url 'home' %}#faq" class="hover:text-brand-600 transition-colors py-2 whitespace-nowrap">FAQ</a>
+                </nav>
+
+                <!-- Zone d'action / Compte -->
+                <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+                    {% if user.is_authenticated %}
+                        {% if user.is_staff or user.role == 'admin' %}
+                            <a href="{% url 'admin:index' %}" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg border border-slate-200 transition-colors whitespace-nowrap">
+                                <i data-lucide="shield" class="w-3.5 h-3.5 text-brand-600"></i> Administration
+                            </a>
+                        {% endif %}
+
+                        {% if user.role == 'donateur' %}
+                            <a href="{% url 'donateur_dashboard' %}" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-lg border border-brand-200 transition-colors whitespace-nowrap">
+                                <i data-lucide="layout-dashboard" class="w-3.5 h-3.5 text-brand-600"></i> Dashboard
+                            </a>
+                        {% elif user.role == 'responsable' %}
+                            <a href="{% url 'orphelinat_dashboard' %}" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-lg border border-brand-200 transition-colors whitespace-nowrap">
+                                <i data-lucide="layout-dashboard" class="w-3.5 h-3.5 text-brand-600"></i> Dashboard
+                            </a>
+                        {% endif %}
+
+                        <a href="{% url 'profile' %}" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all whitespace-nowrap">
+                            {% if user.profile_picture %}
+                                <img src="{{ user.profile_picture.url }}" alt="Avatar" class="w-5 h-5 rounded-full object-cover">
+                            {% else %}
+                                <div class="w-5 h-5 rounded-full bg-brand-600 text-white flex items-center justify-center text-[10px] font-bold">
+                                    {{ user.first_name|first|default:user.username|first|upper }}
+                                </div>
+                            {% endif %}
+                            <span>{{ user.first_name|default:user.username }}</span>
+                        </a>
+
+                        <a href="{% url 'logout' %}" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Déconnexion">
+                            <i data-lucide="log-out" class="w-4 h-4"></i>
+                        </a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="px-3.5 py-2 text-xs font-bold text-slate-700 hover:text-brand-600 hover:bg-slate-100 rounded-lg transition-colors whitespace-nowrap">
+                            Connexion
+                        </a>
+                        <a href="{% url 'register_choice' %}" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm shadow-brand-600/20 hover:shadow-md hover:shadow-brand-600/30 transition-all flex items-center gap-1.5 whitespace-nowrap">
+                            <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> S'inscrire
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+    {% endblock %}
+
+    <!-- Système de messages / Alertes -->
+    <div class="max-w-4xl mx-auto px-4 w-full mt-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="flex items-center gap-3 p-4 mb-3 rounded-xl border text-xs font-medium
+                    {% if message.tags == 'success' %} bg-emerald-50 text-emerald-800 border-emerald-200
+                    {% elif message.tags == 'error' or message.tags == 'danger' %} bg-red-50 text-red-800 border-red-200
+                    {% elif message.tags == 'warning' %} bg-amber-50 text-amber-800 border-amber-200
+                    {% else %} bg-sky-50 text-sky-800 border-sky-200 {% endif %}">
+                    
+                    {% if message.tags == 'success' %}
+                        <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 shrink-0"></i>
+                    {% elif message.tags == 'error' or message.tags == 'danger' %}
+                        <i data-lucide="alert-circle" class="w-4 h-4 text-red-600 shrink-0"></i>
+                    {% elif message.tags == 'warning' %}
+                        <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600 shrink-0"></i>
+                    {% else %}
+                        <i data-lucide="info" class="w-4 h-4 text-sky-600 shrink-0"></i>
+                    {% endif %}
+                    <span class="flex-1">{{ message }}</span>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Contenu Principal -->
+    <main class="flex-1 flex flex-col">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    {% block footer %}
+    <footer class="bg-white border-t border-slate-200 mt-20 text-slate-600 text-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                
+                <div class="md:col-span-1">
+                    <div class="flex items-center gap-3 mb-4">
+                        <img src="{% static 'images/logo.jpg' %}" alt="Logo DONIA" class="h-9 w-9 rounded-lg object-cover border border-slate-200 shadow-xs">
+                        <span class="text-lg font-bold font-heading text-slate-900">DONIA</span>
+                    </div>
+                    <p class="text-slate-500 leading-relaxed text-xs">
+                        Plateforme centralisée de gestion des besoins et de traçabilité des dons pour les orphelinats et structures d'accueil.
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-slate-900 mb-3 uppercase tracking-wider text-xs">Navigation</h4>
+                    <ul class="space-y-2">
+                        <li><a href="{% url 'home' %}" class="hover:text-brand-600 transition-colors">Accueil</a></li>
+                        <li><a href="{% url 'home' %}#fonctionnement" class="hover:text-brand-600 transition-colors">Fonctionnement</a></li>
+                        <li><a href="{% url 'home' %}#technologie" class="hover:text-brand-600 transition-colors">Algorithmes & Analyse</a></li>
+                        <li><a href="{% url 'home' %}#urgences" class="hover:text-brand-600 transition-colors">Besoins répertoriés</a></li>
+                        <li><a href="{% url 'home' %}#faq" class="hover:text-brand-600 transition-colors">FAQ</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-slate-900 mb-3 uppercase tracking-wider text-xs">Accès Utilisateurs</h4>
+                    <ul class="space-y-2">
+                        <li><a href="{% url 'register_donateur' %}" class="hover:text-brand-600 transition-colors">Espace Donateur</a></li>
+                        <li><a href="{% url 'register_responsable' %}" class="hover:text-brand-600 transition-colors">Espace Orphelinat</a></li>
+                        <li><a href="{% url 'login' %}" class="hover:text-brand-600 transition-colors">Authentification</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-slate-900 mb-3 uppercase tracking-wider text-xs">Sécurité & Conformité</h4>
+                    <p class="text-slate-500 text-xs leading-relaxed mb-3">
+                        Contrôle d'accès RBAC strict, agréments d'orphelinats vérifiés et génération de reçus de dons dématérialisés.
+                    </p>
+                    <div class="inline-flex items-center gap-2 text-slate-700 font-semibold text-xs bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
+                        <i data-lucide="lock" class="w-4 h-4 text-brand-600"></i> Traçabilité 100% Garantie
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-400 text-xs">
+                <p>&copy; 2026 DONIA. Plateforme de Gestion des Besoins et Dons des Orphelinats.</p>
+                <p>Développé avec Django, PostgreSQL & Modules d'Analyse Intelligente.</p>
+            </div>
+        </div>
+    </footer>
+    {% endblock %}
+
+    <!-- Initialisation des icônes Lucide -->
+    <script>
+        lucide.createIcons();
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

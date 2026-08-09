@@ -1,0 +1,280 @@
+{% extends 'donations/dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Vue d'ensemble - Espace Donateur - DONIA{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-8">
+
+    <!-- ===================================================
+         EN-TÊTE BIENVENUE & ACTIONS RAPIDES
+         =================================================== -->
+    <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+
+        <div class="flex items-center gap-4">
+            <div class="relative">
+                {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" alt="Avatar" class="w-14 h-14 rounded-xl object-cover border border-slate-200 shadow-xs">
+                {% else %}
+                    <div class="w-14 h-14 rounded-xl bg-brand-600 text-white flex items-center justify-center text-xl font-bold">
+                        {{ user.first_name|first|default:user.username|first|upper }}
+                    </div>
+                {% endif %}
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-xl sm:text-2xl font-extrabold font-heading text-slate-900">
+                        Bonjour, {{ user.first_name|default:user.username }}
+                    </h1>
+                    <span class="px-2.5 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                        <i data-lucide="shield-check" class="w-3 h-3 text-emerald-600"></i> Donateur Vérifié
+                    </span>
+                </div>
+                <p class="text-xs text-slate-500 mt-1">
+                    Bienvenue sur votre espace d'allocation et de traçabilité des dons.
+                </p>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            <a href="{% url 'needs_list' %}" class="flex-1 sm:flex-none px-4 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-xs transition-colors flex items-center justify-center gap-1.5">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i> Faire un Nouveau Don
+            </a>
+            <a href="{% url 'profile' %}" class="flex-1 sm:flex-none px-4 py-2.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold transition-colors flex items-center justify-center gap-1.5">
+                <i data-lucide="user-cog" class="w-4 h-4 text-slate-400"></i> Modifier Profil
+            </a>
+        </div>
+
+    </div>
+
+    <!-- ===================================================
+         INDICATEURS CLÉS DE PERFORMANCE (KPIs)
+         =================================================== -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+            <div>
+                <span class="text-xs font-medium text-slate-500 block mb-1">Total des Contributions</span>
+                <span class="text-2xl font-black font-heading text-slate-900">{{ stats.total_amount|floatformat:0 }} <span class="text-xs font-bold text-slate-500">FCFA</span></span>
+                <span class="text-[11px] text-emerald-600 font-semibold flex items-center gap-1 mt-1">
+                    <i data-lucide="trending-up" class="w-3 h-3"></i> 100% alloué aux enfants
+                </span>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
+                <i data-lucide="wallet" class="w-6 h-6"></i>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+            <div>
+                <span class="text-xs font-medium text-slate-500 block mb-1">Structures Soutenues</span>
+                <span class="text-2xl font-black font-heading text-slate-900">{{ stats.orphanages_count }}</span>
+                <span class="text-[11px] text-slate-400 font-semibold block mt-1">Orphelinats agréés</span>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <i data-lucide="building-2" class="w-6 h-6"></i>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+            <div>
+                <span class="text-xs font-medium text-slate-500 block mb-1">Enfants Impactés</span>
+                <span class="text-2xl font-black font-heading text-slate-900">{{ stats.children_impacted }}</span>
+                <span class="text-[11px] text-brand-600 font-semibold block mt-1">Bénéficiaires directs</span>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
+                <i data-lucide="users" class="w-6 h-6"></i>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+            <div>
+                <span class="text-xs font-medium text-slate-500 block mb-1">Reçus Certifiés</span>
+                <span class="text-2xl font-black font-heading text-slate-900">{{ stats.receipts_count }}</span>
+                <span class="text-[11px] text-emerald-600 font-semibold flex items-center gap-1 mt-1">
+                    <i data-lucide="file-check" class="w-3 h-3"></i> Téléchargeables en PDF
+                </span>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                <i data-lucide="file-text" class="w-6 h-6"></i>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- ===================================================
+         RECOMMANDATIONS IA & BESOINS PRIORITAIRES
+         =================================================== -->
+    <div class="space-y-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-lg font-bold font-heading text-slate-900 flex items-center gap-2">
+                    <i data-lucide="target" class="w-4 h-4 text-brand-600"></i>
+                    Besoins Recommandés selon votre Profil
+                </h2>
+                <p class="text-xs text-slate-500 mt-0.5">
+                    Sélection priorisée automatiquement par l'algorithme d'analyse d'urgence.
+                </p>
+            </div>
+            <a href="{% url 'needs_list' %}" class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1">
+                Voir tout le registre <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </a>
+        </div>
+
+        {% if recommended_needs %}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {% for need in recommended_needs %}
+            <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between hover:border-brand-300 transition-all">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="px-2 py-0.5 rounded text-[11px] font-bold
+                            {% if need.priority_color == 'red' %}bg-red-50 text-red-700 border border-red-200
+                            {% elif need.priority_color == 'amber' %}bg-amber-50 text-amber-800 border border-amber-200
+                            {% else %}bg-slate-100 text-slate-700 border border-slate-200{% endif %}">
+                            {{ need.priority_label }}
+                        </span>
+                        <span class="text-[11px] font-bold text-slate-400">Score IA : {{ need.priority_score }}%</span>
+                    </div>
+
+                    <h3 class="font-bold text-slate-900 text-xs mb-1">{{ need.title }}</h3>
+                    <p class="text-[11px] text-slate-500 mb-1 flex items-center gap-1">
+                        <i data-lucide="building" class="w-3 h-3 text-slate-400"></i> {{ need.orphanage.orphanage_name|default:need.orphanage }}
+                    </p>
+                    <p class="text-[11px] text-brand-600 font-medium mb-4 flex items-center gap-1">
+                        <i data-lucide="tag" class="w-3 h-3"></i> {{ need.category.name }} • {{ need.children_count }} enfants
+                    </p>
+
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[11px] font-bold text-slate-600">
+                            <span>{{ need.coverage_percent }}% financé</span>
+                            <span>{{ need.collected_amount|floatformat:0 }} / {{ need.target_amount|floatformat:0 }} FCFA</span>
+                        </div>
+                        <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-brand-600 rounded-full" style="width: {{ need.coverage_percent }}%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-4 mt-4 border-t border-slate-100 flex items-center gap-2">
+                    <a href="{% url 'need_detail' need.pk %}" class="w-full py-2 px-3 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs transition-colors">
+                        <i data-lucide="heart" class="w-3.5 h-3.5"></i> Contribuer maintenant
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-white rounded-xl border border-dashed border-slate-300 p-10 text-center">
+            <i data-lucide="inbox" class="w-8 h-8 text-slate-300 mx-auto mb-2"></i>
+            <p class="text-xs text-slate-500">Aucun besoin ouvert pour le moment. Revenez bientôt !</p>
+        </div>
+        {% endif %}
+    </div>
+
+
+    <!-- ===================================================
+         HISTORIQUE DES DONS & REÇUS FISCAUX
+         =================================================== -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+        <div class="lg:col-span-8 space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-bold font-heading text-slate-900 flex items-center gap-2">
+                        <i data-lucide="history" class="w-4 h-4 text-brand-600"></i>
+                        Activité Récente
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Vos 5 dernières contributions.</p>
+                </div>
+                <a href="{% url 'donation_history' %}" class="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1">
+                    Historique complet <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                </a>
+            </div>
+
+            <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+                {% if recent_donations %}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-600">
+                        <thead class="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[10px]">
+                            <tr>
+                                <th class="px-4 py-3.5">Réf & Date</th>
+                                <th class="px-4 py-3.5">Bénéficiaire / Besoin</th>
+                                <th class="px-4 py-3.5">Montant</th>
+                                <th class="px-4 py-3.5 text-right">Reçu</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            {% for donation in recent_donations %}
+                            <tr class="hover:bg-slate-50/80 transition-colors">
+                                <td class="px-4 py-3.5">
+                                    <span class="font-bold text-slate-900 block">{{ donation.reference }}</span>
+                                    <span class="text-[11px] text-slate-400">{{ donation.created_at|date:"d M Y" }}</span>
+                                </td>
+                                <td class="px-4 py-3.5">
+                                    <span class="font-bold text-slate-900 block">{{ donation.need.orphanage.orphanage_name|default:donation.need.orphanage }}</span>
+                                    <span class="text-[11px] text-slate-500">{{ donation.need.title }}</span>
+                                </td>
+                                <td class="px-4 py-3.5 font-bold text-slate-900">{{ donation.amount_display }}</td>
+                                <td class="px-4 py-3.5 text-right">
+                                    <a href="{% url 'download_receipt' donation.pk %}" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-slate-100 hover:bg-brand-50 hover:text-brand-700 text-slate-700 font-semibold text-[11px] border border-slate-200 transition-colors">
+                                        <i data-lucide="download" class="w-3 h-3 text-brand-600"></i> PDF
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="p-10 text-center">
+                    <i data-lucide="hand-heart" class="w-8 h-8 text-slate-300 mx-auto mb-2"></i>
+                    <p class="text-xs text-slate-500">Vous n'avez pas encore effectué de don. Parcourez les besoins pour commencer.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="lg:col-span-4 space-y-4">
+            <div>
+                <h2 class="text-lg font-bold font-heading text-slate-900 flex items-center gap-2">
+                    <i data-lucide="pie-chart" class="w-4 h-4 text-brand-600"></i>
+                    Répartition d'Impact
+                </h2>
+                <p class="text-xs text-slate-500 mt-0.5">Ventilation de vos aides par domaine.</p>
+            </div>
+
+            <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs space-y-4">
+                {% if category_distribution %}
+                    {% for cat in category_distribution %}
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+                            <span>{{ cat.name }}</span>
+                            <span>{{ cat.percentage }}%</span>
+                        </div>
+                        <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="h-full {{ cat.color }} rounded-full" style="width: {{ cat.percentage }}%;"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-[11px] text-slate-400 text-center py-2">Aucune contribution financière pour le moment.</p>
+                {% endif %}
+
+                <div class="pt-4 border-t border-slate-100">
+                    <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 text-slate-600 text-xs space-y-1">
+                        <span class="font-bold text-slate-900 flex items-center gap-1">
+                            <i data-lucide="shield" class="w-3.5 h-3.5 text-brand-600"></i> Reçus certifiés
+                        </span>
+                        <p class="text-[11px] text-slate-500">
+                            Chaque don génère automatiquement un reçu officiel téléchargeable en PDF.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends 'donations/dashboard_base.html' %}
+{% load static %}
+
+{% block title %}{{ need.title }} - DONIA{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+
+    <a href="{% url 'needs_list' %}" class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-brand-600">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Retour aux besoins
+    </a>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+        <!-- Détail du besoin -->
+        <div class="lg:col-span-7 space-y-5">
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xs">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="px-2.5 py-1 rounded text-[11px] font-bold
+                        {% if need.priority_color == 'red' %}bg-red-50 text-red-700 border border-red-200
+                        {% elif need.priority_color == 'amber' %}bg-amber-50 text-amber-800 border border-amber-200
+                        {% else %}bg-slate-100 text-slate-700 border border-slate-200{% endif %}">
+                        {{ need.priority_label }}
+                    </span>
+                    <span class="text-[11px] font-bold text-slate-400">Score IA de priorité : {{ need.priority_score }}%</span>
+                </div>
+
+                <h1 class="text-xl sm:text-2xl font-extrabold font-heading text-slate-900 mb-2">{{ need.title }}</h1>
+
+                <div class="flex flex-wrap items-center gap-4 text-xs text-slate-500 mb-5">
+                    <span class="flex items-center gap-1.5"><i data-lucide="building" class="w-3.5 h-3.5 text-slate-400"></i> {{ need.orphanage.orphanage_name|default:need.orphanage }}</span>
+                    <span class="flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400"></i> {{ need.orphanage.address|default:"Localisation non précisée" }}</span>
+                    <span class="flex items-center gap-1.5"><i data-lucide="tag" class="w-3.5 h-3.5 text-slate-400"></i> {{ need.category.name }}</span>
+                    <span class="flex items-center gap-1.5"><i data-lucide="users" class="w-3.5 h-3.5 text-slate-400"></i> {{ need.children_count }} enfants concernés</span>
+                </div>
+
+                <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-line">{{ need.description }}</p>
+
+                <div class="mt-6 pt-6 border-t border-slate-100 space-y-2">
+                    <div class="flex justify-between text-sm font-bold text-slate-700">
+                        <span>{{ need.coverage_percent }}% financé</span>
+                        <span>{{ need.collected_amount|floatformat:0 }} / {{ need.target_amount|floatformat:0 }} FCFA</span>
+                    </div>
+                    <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-brand-600 rounded-full" style="width: {{ need.coverage_percent }}%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulaire de don -->
+        <div class="lg:col-span-5">
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-7 shadow-xs sticky top-24">
+                <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2 mb-1">
+                    <i data-lucide="hand-heart" class="w-4 h-4 text-brand-600"></i> Faire un don pour ce besoin
+                </h2>
+                <p class="text-[11px] text-slate-500 mb-5">Un reçu officiel sera généré automatiquement après votre contribution.</p>
+
+                {% if form.non_field_errors %}
+                    <div class="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <form method="post" action="{% url 'make_donation' need.pk %}" class="space-y-4">
+                    {% csrf_token %}
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-2">{{ form.donation_type.label }}</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            {% for radio in form.donation_type %}
+                                <label class="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 cursor-pointer has-[:checked]:bg-brand-50 has-[:checked]:border-brand-400 has-[:checked]:text-brand-700 transition-colors">
+                                    {{ radio.tag }} {{ radio.choice_label }}
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="{{ form.amount.id_for_label }}" class="block text-xs font-bold text-slate-700 mb-1.5">{{ form.amount.label }}</label>
+                        {{ form.amount }}
+                        {% if form.amount.errors %}<p class="text-[11px] text-red-600 mt-1">{{ form.amount.errors.0 }}</p>{% endif %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.item_description.id_for_label }}" class="block text-xs font-bold text-slate-700 mb-1.5">{{ form.item_description.label }}</label>
+                        {{ form.item_description }}
+                        {% if form.item_description.errors %}<p class="text-[11px] text-red-600 mt-1">{{ form.item_description.errors.0 }}</p>{% endif %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.message.id_for_label }}" class="block text-xs font-bold text-slate-700 mb-1.5">{{ form.message.label }}</label>
+                        {{ form.message }}
+                    </div>
+
+                    <button type="submit" class="w-full py-3 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm shadow-sm transition-colors flex items-center justify-center gap-2">
+                        <i data-lucide="heart" class="w-4 h-4"></i> Confirmer mon don
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
