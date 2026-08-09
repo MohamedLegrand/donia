@@ -1,15 +1,17 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.utils import timezone
 from .forms import (
     EmailAuthenticationForm,
     DonateurRegistrationForm,
     ResponsableRegistrationForm,
     UserProfileUpdateForm,
-    ResponsableProfileUpdateForm
+    ResponsableProfileUpdateForm,
+    TeamMemberJoinForm
 )
-from .models import User
+from .models import User, TeamInvite
 
 
 def home_view(request):
@@ -50,19 +52,49 @@ def register_responsable_view(request):
         return redirect('login_redirect')
 
     if request.method == 'POST':
-        form = ResponsableRegistrationForm(request.POST, request.FILES)
+        form = ResponsableRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            messages.info(
+            messages.success(
                 request,
-                f"Votre demande d'inscription pour l'orphelinat '{user.orphanage_name}' a été enregistrée avec succès. "
-                "Un administrateur va vérifier vos pièces justificatives avant d'activer votre compte."
+                f"Bienvenue {user.first_name} ! Votre compte a été créé avec succès. "
+                "Connectez-vous pour compléter le profil de votre orphelinat."
             )
             return redirect('login')
     else:
         form = ResponsableRegistrationForm()
 
     return render(request, 'accounts/register_responsable.html', {'form': form})
+
+
+def team_invite_accept_view(request, token):
+    """Création de compte pour un membre d'équipe à partir d'un lien d'invitation."""
+    if request.user.is_authenticated:
+        return redirect('login_redirect')
+
+    invite = get_object_or_404(TeamInvite, token=token)
+
+    if invite.is_used:
+        messages.error(request, "Ce lien d'invitation a déjà été utilisé.")
+        return redirect('login')
+
+    if request.method == 'POST':
+        form = TeamMemberJoinForm(request.POST)
+        if form.is_valid():
+            user = form.save(organization_owner=invite.organization_owner)
+            invite.is_used = True
+            invite.accepted_at = timezone.now()
+            invite.save(update_fields=['is_used', 'accepted_at'])
+            messages.success(
+                request,
+                f"Bienvenue {user.first_name} ! Vous avez rejoint l'équipe de "
+                f"« {invite.organization_owner.orphanage_name or invite.organization_owner} »."
+            )
+            return redirect('login')
+    else:
+        form = TeamMemberJoinForm(initial={'email': invite.email})
+
+    return render(request, 'accounts/team_invite_accept.html', {'form': form, 'invite': invite})
 
 
 def login_view(request):
@@ -100,7 +132,7 @@ def login_redirect_view(request):
     """Redirection intelligente selon le rôle de l'utilisateur."""
     user = request.user
     if user.is_superuser or user.role == User.Role.ADMIN:
-        return redirect('/admin/')
+        return redirect('admin_dashboard')
     elif user.role == User.Role.RESPONSABLE:
         return redirect('orphelinat_dashboard')
     else:
@@ -111,8 +143,14 @@ def login_redirect_view(request):
 def profile_view(request):
     """Consultation et modification du profil utilisateur (formulaire et template adaptés au rôle)."""
     if request.user.is_responsable_role:
-        form_class = ResponsableProfileUpdateForm
-        template_name = 'donations/orphelinat_profile.html'
+        if request.user.is_team_member:
+            form_class = UserProfileUpdateForm
+            template_name = 'donations/orphelinat_profile.html'
+        elif not request.user.onboarding_completed:
+            return redirect('orphanage_onboarding')
+        else:
+            form_class = ResponsableProfileUpdateForm
+            template_name = 'donations/orphelinat_profile.html'
     elif request.user.is_donateur_role:
         form_class = UserProfileUpdateForm
         template_name = 'donations/profile.html'

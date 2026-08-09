@@ -82,13 +82,11 @@
                 <!-- Zone d'action / Compte -->
                 <div class="flex items-center gap-2 sm:gap-3 shrink-0">
                     {% if user.is_authenticated %}
-                        {% if user.is_staff or user.role == 'admin' %}
-                            <a href="{% url 'admin:index' %}" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg border border-slate-200 transition-colors whitespace-nowrap">
-                                <i data-lucide="shield" class="w-3.5 h-3.5 text-brand-600"></i> Administration
+                        {% if user.is_admin_role %}
+                            <a href="{% url 'admin_dashboard' %}" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-lg border border-brand-200 transition-colors whitespace-nowrap">
+                                <i data-lucide="layout-dashboard" class="w-3.5 h-3.5 text-brand-600"></i> Dashboard
                             </a>
-                        {% endif %}
-
-                        {% if user.role == 'donateur' %}
+                        {% elif user.role == 'donateur' %}
                             <a href="{% url 'donateur_dashboard' %}" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-lg border border-brand-200 transition-colors whitespace-nowrap">
                                 <i data-lucide="layout-dashboard" class="w-3.5 h-3.5 text-brand-600"></i> Dashboard
                             </a>

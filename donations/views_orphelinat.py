@@ -15,10 +15,13 @@ from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
+from accounts.forms import OrphanageOnboardingForm, TeamInviteForm
+from accounts.models import TeamInvite, User
+
 from .colors import category_color
-from .decorators import responsable_required
-from .forms import NeedForm
-from .models import Donation, Need, Notification
+from .decorators import approved_responsable_required, responsable_required
+from .forms import CampaignForm, NeedForm, NeedPhotoForm
+from .models import Campaign, Donation, Need, NeedPhoto, Notification
 
 FR_MONTHS = ['', 'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc']
 
@@ -26,7 +29,7 @@ FR_MONTHS = ['', 'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'S
 @responsable_required
 def orphelinat_dashboard_view(request):
     """Vue d'ensemble du responsable : indicateurs, dons récents et besoins à prioriser."""
-    user = request.user
+    user = request.user.organization_account
     needs = Need.objects.filter(orphanage=user).select_related('category')
     donations = Donation.objects.filter(need__orphanage=user).select_related('need', 'donateur')
 
@@ -53,9 +56,86 @@ def orphelinat_dashboard_view(request):
 
 
 @responsable_required
+def orphanage_onboarding_view(request):
+    """Formulaire de complétion du profil de l'orphelinat (nom, adresse, justificatif, CNI)."""
+    user = request.user
+
+    if user.is_team_member:
+        return redirect('orphelinat_dashboard')
+
+    if request.method == 'POST':
+        form = OrphanageOnboardingForm(request.POST, request.FILES, instance=user)
+        if form.is_valid():
+            onboarded_user = form.save(commit=False)
+            onboarded_user.onboarding_completed = True
+            onboarded_user.save()
+            messages.success(
+                request,
+                "Merci ! Le profil de votre orphelinat a été soumis avec succès. "
+                "Un administrateur va vérifier votre dossier avant de valider votre compte."
+            )
+            return redirect('orphelinat_dashboard')
+    else:
+        form = OrphanageOnboardingForm(instance=user)
+
+    return render(request, 'donations/orphanage_onboarding.html', {'form': form})
+
+
+@approved_responsable_required
+def team_view(request):
+    """Gestion de l'équipe : membres actuels et invitation de nouveaux membres."""
+    if request.user.is_team_member:
+        messages.error(request, "Seul le responsable principal peut gérer l'équipe.")
+        return redirect('orphelinat_dashboard')
+
+    if request.method == 'POST':
+        form = TeamInviteForm(request.POST)
+        if form.is_valid():
+            invite = TeamInvite.objects.create(
+                organization_owner=request.user,
+                email=form.cleaned_data['email'],
+            )
+            invite_url = request.build_absolute_uri(
+                reverse('team_invite_accept', kwargs={'token': invite.token})
+            )
+            messages.success(
+                request,
+                f"Invitation créée pour {invite.email}. Partagez-lui ce lien : {invite_url}"
+            )
+            return redirect('team_manage')
+    else:
+        form = TeamInviteForm()
+
+    members = User.objects.filter(organization_owner=request.user).order_by('-date_joined')
+    pending_invites = TeamInvite.objects.filter(organization_owner=request.user, is_used=False).order_by('-created_at')
+
+    context = {
+        'form': form,
+        'members': members,
+        'pending_invites': pending_invites,
+    }
+    return render(request, 'donations/team_manage.html', context)
+
+
+@approved_responsable_required
+def team_remove_member_view(request, pk):
+    """Retire un membre de l'équipe (ne supprime pas son compte)."""
+    if request.user.is_team_member:
+        messages.error(request, "Seul le responsable principal peut gérer l'équipe.")
+        return redirect('orphelinat_dashboard')
+
+    member = get_object_or_404(User, pk=pk, organization_owner=request.user)
+    if request.method == 'POST':
+        member.organization_owner = None
+        member.save(update_fields=['organization_owner'])
+        messages.success(request, f"{member.get_full_name() or member.username} a été retiré(e) de l'équipe.")
+    return redirect('team_manage')
+
+
+@approved_responsable_required
 def my_needs_view(request):
     """Liste des besoins publiés par le responsable, avec actions de gestion."""
-    needs = Need.objects.filter(orphanage=request.user).select_related('category').order_by('-created_at')
+    needs = Need.objects.filter(orphanage=request.user.organization_account).select_related('category').order_by('-created_at')
 
     status = request.GET.get('status', '')
     if status == 'ouverts':
@@ -69,44 +149,47 @@ def my_needs_view(request):
     return render(request, 'donations/my_needs.html', {'page_obj': page_obj, 'selected_status': status})
 
 
-@responsable_required
+@approved_responsable_required
 def need_create_view(request):
     """Publication d'un nouveau besoin."""
+    org_user = request.user.organization_account
+
     if request.method == 'POST':
-        form = NeedForm(request.POST)
+        form = NeedForm(request.POST, orphanage=org_user)
         if form.is_valid():
             need = form.save(commit=False)
-            need.orphanage = request.user
+            need.orphanage = org_user
             need.save()
             messages.success(request, f"Le besoin « {need.title} » a été publié avec succès.")
             return redirect('my_needs')
     else:
-        form = NeedForm()
+        form = NeedForm(orphanage=org_user)
 
     return render(request, 'donations/need_form.html', {'form': form, 'is_edit': False})
 
 
-@responsable_required
+@approved_responsable_required
 def need_edit_view(request, pk):
     """Modification d'un besoin existant appartenant au responsable connecté."""
-    need = get_object_or_404(Need, pk=pk, orphanage=request.user)
+    org_user = request.user.organization_account
+    need = get_object_or_404(Need, pk=pk, orphanage=org_user)
 
     if request.method == 'POST':
-        form = NeedForm(request.POST, instance=need)
+        form = NeedForm(request.POST, instance=need, orphanage=org_user)
         if form.is_valid():
             form.save()
             messages.success(request, "Le besoin a été mis à jour avec succès.")
             return redirect('my_needs')
     else:
-        form = NeedForm(instance=need)
+        form = NeedForm(instance=need, orphanage=org_user)
 
     return render(request, 'donations/need_form.html', {'form': form, 'is_edit': True, 'need': need})
 
 
-@responsable_required
+@approved_responsable_required
 def need_delete_view(request, pk):
     """Suppression d'un besoin (action irréversible, confirmée côté template)."""
-    need = get_object_or_404(Need, pk=pk, orphanage=request.user)
+    need = get_object_or_404(Need, pk=pk, orphanage=request.user.organization_account)
     if request.method == 'POST':
         title = need.title
         need.delete()
@@ -114,21 +197,126 @@ def need_delete_view(request, pk):
     return redirect('my_needs')
 
 
-@responsable_required
+@approved_responsable_required
 def need_toggle_close_view(request, pk):
     """Clôture / réouverture d'un besoin."""
-    need = get_object_or_404(Need, pk=pk, orphanage=request.user)
+    need = get_object_or_404(Need, pk=pk, orphanage=request.user.organization_account)
     if request.method == 'POST':
         need.is_closed = not need.is_closed
         need.save(update_fields=['is_closed', 'updated_at'])
         messages.success(request, f"Le besoin a été {'clôturé' if need.is_closed else 'réouvert'}.")
+
+        if need.is_closed:
+            for follow in need.followers.select_related('donateur'):
+                Notification.objects.create(
+                    user=follow.donateur,
+                    title="Un besoin que vous suivez a été clôturé",
+                    message=f"« {need.title} » a été clôturé par l'orphelinat. Merci pour votre soutien !",
+                    level=Notification.Level.SUCCESS,
+                    link=reverse('need_detail', kwargs={'pk': need.pk}),
+                )
     return redirect('my_needs')
 
 
-@responsable_required
+@approved_responsable_required
+def campaigns_list_view(request):
+    """Liste des campagnes regroupant plusieurs besoins."""
+    campaigns = Campaign.objects.filter(
+        orphanage=request.user.organization_account
+    ).annotate(needs_total=Count('needs')).order_by('-created_at')
+    return render(request, 'donations/campaigns_list.html', {'campaigns': campaigns})
+
+
+@approved_responsable_required
+def campaign_create_view(request):
+    """Création d'une nouvelle campagne."""
+    if request.method == 'POST':
+        form = CampaignForm(request.POST)
+        if form.is_valid():
+            campaign = form.save(commit=False)
+            campaign.orphanage = request.user.organization_account
+            campaign.save()
+            messages.success(request, f"La campagne « {campaign.title} » a été créée avec succès.")
+            return redirect('campaigns_list')
+    else:
+        form = CampaignForm()
+
+    return render(request, 'donations/campaign_form.html', {'form': form, 'is_edit': False})
+
+
+@approved_responsable_required
+def campaign_edit_view(request, pk):
+    """Modification d'une campagne existante."""
+    campaign = get_object_or_404(Campaign, pk=pk, orphanage=request.user.organization_account)
+
+    if request.method == 'POST':
+        form = CampaignForm(request.POST, instance=campaign)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "La campagne a été mise à jour avec succès.")
+            return redirect('campaigns_list')
+    else:
+        form = CampaignForm(instance=campaign)
+
+    return render(request, 'donations/campaign_form.html', {'form': form, 'is_edit': True, 'campaign': campaign})
+
+
+@approved_responsable_required
+def campaign_delete_view(request, pk):
+    """Suppression d'une campagne (les besoins associés sont conservés, simplement détachés)."""
+    campaign = get_object_or_404(Campaign, pk=pk, orphanage=request.user.organization_account)
+    if request.method == 'POST':
+        title = campaign.title
+        campaign.delete()
+        messages.success(request, f"La campagne « {title} » a été supprimée. Ses besoins restent publiés.")
+    return redirect('campaigns_list')
+
+
+@approved_responsable_required
+def campaign_toggle_close_view(request, pk):
+    """Clôture / réouverture d'une campagne."""
+    campaign = get_object_or_404(Campaign, pk=pk, orphanage=request.user.organization_account)
+    if request.method == 'POST':
+        campaign.is_closed = not campaign.is_closed
+        campaign.save(update_fields=['is_closed', 'updated_at'])
+        messages.success(request, f"La campagne a été {'clôturée' if campaign.is_closed else 'réouverte'}.")
+    return redirect('campaigns_list')
+
+
+@approved_responsable_required
+def need_photos_view(request, pk):
+    """Galerie photo d'un besoin : ajout et suppression de photos."""
+    need = get_object_or_404(Need, pk=pk, orphanage=request.user.organization_account)
+
+    if request.method == 'POST':
+        form = NeedPhotoForm(request.POST, request.FILES)
+        if form.is_valid():
+            photo = form.save(commit=False)
+            photo.need = need
+            photo.save()
+            messages.success(request, "La photo a été ajoutée avec succès.")
+            return redirect('need_photos', pk=need.pk)
+    else:
+        form = NeedPhotoForm()
+
+    return render(request, 'donations/need_photos.html', {'need': need, 'form': form})
+
+
+@approved_responsable_required
+def need_photo_delete_view(request, pk, photo_pk):
+    """Suppression d'une photo d'un besoin."""
+    need = get_object_or_404(Need, pk=pk, orphanage=request.user.organization_account)
+    photo = get_object_or_404(NeedPhoto, pk=photo_pk, need=need)
+    if request.method == 'POST':
+        photo.delete()
+        messages.success(request, "La photo a été supprimée.")
+    return redirect('need_photos', pk=need.pk)
+
+
+@approved_responsable_required
 def received_donations_view(request):
     """Liste des dons reçus pour les besoins du responsable, avec validation de réception."""
-    donations = Donation.objects.filter(need__orphanage=request.user).select_related(
+    donations = Donation.objects.filter(need__orphanage=request.user.organization_account).select_related(
         'need', 'donateur', 'need__category'
     )
 
@@ -147,11 +335,11 @@ def received_donations_view(request):
     return render(request, 'donations/received_donations.html', context)
 
 
-@responsable_required
+@approved_responsable_required
 def validate_donation_view(request, pk):
     """Confirmation de la réception effective d'un don par le responsable."""
     donation = get_object_or_404(
-        Donation.objects.select_related('need', 'donateur'), pk=pk, need__orphanage=request.user
+        Donation.objects.select_related('need', 'donateur'), pk=pk, need__orphanage=request.user.organization_account
     )
 
     if request.method == 'POST' and donation.status != Donation.Status.RECEPTIONNE:
@@ -174,10 +362,10 @@ def validate_donation_view(request, pk):
     return redirect('received_donations')
 
 
-@responsable_required
+@approved_responsable_required
 def statistics_view(request):
     """Statistiques consolidées : répartition par catégorie, besoins les plus soutenus, tendance mensuelle."""
-    user = request.user
+    user = request.user.organization_account
     needs = Need.objects.filter(orphanage=user).select_related('category')
     donations = Donation.objects.filter(need__orphanage=user).select_related('need__category')
 
@@ -231,10 +419,10 @@ def statistics_view(request):
     return render(request, 'donations/orphelinat_statistics.html', context)
 
 
-@responsable_required
+@approved_responsable_required
 def reports_view(request):
     """Page d'accès au rapport d'activité téléchargeable au format PDF."""
-    user = request.user
+    user = request.user.organization_account
     context = {
         'needs_count': Need.objects.filter(orphanage=user).count(),
         'donations_count': Donation.objects.filter(need__orphanage=user).count(),
@@ -243,10 +431,10 @@ def reports_view(request):
     return render(request, 'donations/orphelinat_reports.html', context)
 
 
-@responsable_required
+@approved_responsable_required
 def download_report_view(request):
     """Génère le rapport d'activité PDF (besoins publiés + dons reçus)."""
-    user = request.user
+    user = request.user.organization_account
     needs = Need.objects.filter(orphanage=user).select_related('category').order_by('-created_at')
     donations = Donation.objects.filter(need__orphanage=user).select_related('need', 'donateur').order_by('-created_at')
 

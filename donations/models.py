@@ -24,6 +24,51 @@ class Category(models.Model):
         return self.name
 
 
+class Campaign(models.Model):
+    """Campagne regroupant plusieurs besoins sous un même objectif (ex : Rentrée scolaire 2026)."""
+
+    orphanage = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='campaigns',
+        limit_choices_to={'role': 'responsable'},
+        verbose_name="Orphelinat"
+    )
+    title = models.CharField(max_length=200, verbose_name="Titre de la campagne")
+    description = models.TextField(blank=True, verbose_name="Description")
+    is_closed = models.BooleanField(default=False, verbose_name="Campagne clôturée")
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Dernière modification")
+
+    class Meta:
+        verbose_name = "Campagne"
+        verbose_name_plural = "Campagnes"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.title
+
+    @property
+    def needs_count(self):
+        return self.needs.count()
+
+    @property
+    def target_amount_total(self):
+        return self.needs.aggregate(total=models.Sum('target_amount'))['total'] or 0
+
+    @property
+    def collected_amount_total(self):
+        return self.needs.aggregate(total=models.Sum('collected_amount'))['total'] or 0
+
+    @property
+    def coverage_percent(self):
+        target = self.target_amount_total
+        if not target:
+            return 0
+        return min(100, round((self.collected_amount_total / target) * 100))
+
+
 class Need(models.Model):
     """Besoin publié par un orphelinat (responsable) et proposé aux donateurs."""
 
@@ -39,6 +84,14 @@ class Need(models.Model):
         on_delete=models.PROTECT,
         related_name='needs',
         verbose_name="Catégorie"
+    )
+    campaign = models.ForeignKey(
+        Campaign,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='needs',
+        verbose_name="Campagne associée"
     )
     title = models.CharField(max_length=200, verbose_name="Titre du besoin")
     description = models.TextField(verbose_name="Description détaillée")
@@ -113,6 +166,23 @@ class Need(models.Model):
         return 'slate'
 
 
+class NeedPhoto(models.Model):
+    """Photo illustrant un besoin (contexte terrain, preuve d'utilisation des dons)."""
+
+    need = models.ForeignKey(Need, on_delete=models.CASCADE, related_name='photos', verbose_name="Besoin")
+    image = models.ImageField(upload_to='need_photos/', verbose_name="Photo")
+    caption = models.CharField(max_length=200, blank=True, verbose_name="Légende")
+    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="Date d'ajout")
+
+    class Meta:
+        verbose_name = "Photo de besoin"
+        verbose_name_plural = "Photos de besoins"
+        ordering = ['-uploaded_at']
+
+    def __str__(self):
+        return f"Photo de {self.need.title}"
+
+
 class Donation(models.Model):
     """Contribution effectuée par un donateur pour un besoin donné."""
 
@@ -177,6 +247,29 @@ class Donation(models.Model):
         if self.donation_type == self.DonationType.FINANCIER and self.amount is not None:
             return f"{self.amount:,.0f} FCFA".replace(',', ' ')
         return self.item_description or "Don en nature"
+
+
+class NeedFollow(models.Model):
+    """Suivi (favori) d'un besoin par un donateur, pour être notifié de sa progression."""
+
+    donateur = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='followed_needs',
+        limit_choices_to={'role': 'donateur'},
+        verbose_name="Donateur"
+    )
+    need = models.ForeignKey(Need, on_delete=models.CASCADE, related_name='followers', verbose_name="Besoin")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de suivi")
+
+    class Meta:
+        verbose_name = "Besoin suivi"
+        verbose_name_plural = "Besoins suivis"
+        unique_together = ('donateur', 'need')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.donateur} suit « {self.need.title} »"
 
 
 class Notification(models.Model):

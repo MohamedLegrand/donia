@@ -1,0 +1,66 @@
+{% extends 'adminpanel/admin_base.html' %}
+{% load static %}
+
+{% block title %}Catégories - Administration - DONIA{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-xl sm:text-2xl font-extrabold font-heading text-slate-900">Catégories de besoins</h1>
+            <p class="text-xs text-slate-500 mt-1">Gérez la nomenclature utilisée pour classer les besoins publiés.</p>
+        </div>
+        <a href="{% url 'admin_category_create' %}" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-xs transition-colors">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i> Nouvelle catégorie
+        </a>
+    </div>
+
+    {% if categories %}
+    <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+        <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[10px]">
+                <tr>
+                    <th class="px-4 py-3.5">Catégorie</th>
+                    <th class="px-4 py-3.5">Icône</th>
+                    <th class="px-4 py-3.5">Besoins associés</th>
+                    <th class="px-4 py-3.5 text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for cat in categories %}
+                <tr class="hover:bg-slate-50/80 transition-colors">
+                    <td class="px-4 py-3.5 font-bold text-slate-900">{{ cat.name }}</td>
+                    <td class="px-4 py-3.5">
+                        <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-slate-100 text-slate-600 text-[11px] font-mono">
+                            <i data-lucide="{{ cat.icon }}" class="w-3.5 h-3.5"></i> {{ cat.icon }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3.5">{{ cat.needs_count }}</td>
+                    <td class="px-4 py-3.5 text-right">
+                        <div class="inline-flex items-center gap-2">
+                            <a href="{% url 'admin_category_edit' cat.pk %}" class="p-1.5 rounded-md bg-slate-100 hover:bg-brand-50 hover:text-brand-700 text-slate-500 transition-colors" title="Modifier">
+                                <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                            </a>
+                            <form method="post" action="{% url 'admin_category_delete' cat.pk %}" onsubmit="return confirm('Supprimer cette catégorie ?');">
+                                {% csrf_token %}
+                                <button type="submit" class="p-1.5 rounded-md bg-red-50 hover:bg-red-100 text-red-600 transition-colors" title="Supprimer">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl border border-dashed border-slate-300 p-12 text-center">
+        <i data-lucide="tags" class="w-8 h-8 text-slate-300 mx-auto mb-3"></i>
+        <p class="text-sm font-bold text-slate-700">Aucune catégorie</p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

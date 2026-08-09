@@ -43,6 +43,11 @@
                 </div>
 
                 <h3 class="font-bold text-slate-900 text-xs mb-1">{{ need.title }}</h3>
+                {% if need.campaign %}
+                    <span class="inline-flex items-center gap-1 text-[11px] text-brand-600 font-semibold mb-1">
+                        <i data-lucide="megaphone" class="w-3 h-3"></i> {{ need.campaign.title }}
+                    </span>
+                {% endif %}
                 <p class="text-[11px] text-slate-500 mb-3">{{ need.children_count }} enfants concernés</p>
 
                 <div class="space-y-1">
@@ -56,9 +61,12 @@
                 </div>
             </div>
 
-            <div class="pt-4 mt-4 border-t border-slate-100 flex items-center gap-2">
+            <div class="pt-4 mt-4 border-t border-slate-100 flex items-center gap-2 flex-wrap">
                 <a href="{% url 'need_edit' need.pk %}" class="flex-1 py-2 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors">
                     <i data-lucide="pencil" class="w-3.5 h-3.5"></i> Modifier
+                </a>
+                <a href="{% url 'need_photos' need.pk %}" class="flex-1 py-2 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors">
+                    <i data-lucide="image" class="w-3.5 h-3.5"></i> Photos{% if need.photos.count %} ({{ need.photos.count }}){% endif %}
                 </a>
                 <form method="post" action="{% url 'need_toggle_close' need.pk %}" class="flex-1">
                     {% csrf_token %}

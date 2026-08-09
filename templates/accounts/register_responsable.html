@@ -28,12 +28,12 @@
                 <p class="text-xs text-slate-500 mt-1">Dossier d'adhésion pour établissement d'accueil d'enfants</p>
             </div>
 
-            <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-3 mb-6">
-                <i data-lucide="shield-alert" class="w-5 h-5 text-amber-600 shrink-0 mt-0.5"></i>
-                <span class="leading-relaxed">Par mesure de conformité réglementaire, toute nouvelle structure fait l'objet d'une vérification administrative sous 24h avant ouverture des droits de publication.</span>
+            <div class="p-4 rounded-2xl bg-sky-50 border border-sky-200 text-sky-900 text-xs flex items-start gap-3 mb-6">
+                <i data-lucide="info" class="w-5 h-5 text-sky-600 shrink-0 mt-0.5"></i>
+                <span class="leading-relaxed">Créez d'abord votre compte responsable. Vous pourrez ensuite compléter le profil de votre orphelinat (nom, adresse, justificatif, pièce d'identité) depuis votre espace, avant validation par un administrateur.</span>
             </div>
 
-            <form method="post" enctype="multipart/form-data" novalidate class="space-y-5">
+            <form method="post" novalidate class="space-y-5">
                 {% csrf_token %}
 
                 {% if form.non_field_errors %}
@@ -46,33 +46,6 @@
                         </div>
                     </div>
                 {% endif %}
-
-                <!-- Section Structure -->
-                <div class="border-b border-slate-100 pb-5">
-                    <h2 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <i data-lucide="building" class="w-4 h-4 text-brand-600"></i> Informations Institutionnelles
-                    </h2>
-
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1" for="{{ form.orphanage_name.id_for_label }}">Nom de l'Établissement / Orphelinat *</label>
-                            {{ form.orphanage_name }}
-                            {% if form.orphanage_name.errors %}
-                                <p class="text-red-600 text-xs mt-1 font-medium">{{ form.orphanage_name.errors.0 }}</p>
-                            {% endif %}
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1" for="{{ form.orphanage_document.id_for_label }}">
-                                Document d'agrément ou arrêté d'autorisation (PDF ou image)
-                            </label>
-                            {{ form.orphanage_document }}
-                            {% if form.orphanage_document.errors %}
-                                <p class="text-red-600 text-xs mt-1 font-medium">{{ form.orphanage_document.errors.0 }}</p>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Section Responsable -->
                 <div>
@@ -107,22 +80,12 @@
                             {% endif %}
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1" for="{{ form.phone.id_for_label }}">Téléphone officiel *</label>
-                                {{ form.phone }}
-                                {% if form.phone.errors %}
-                                    <p class="text-red-600 text-xs mt-1 font-medium">{{ form.phone.errors.0 }}</p>
-                                {% endif %}
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1" for="{{ form.address.id_for_label }}">Adresse / Commune *</label>
-                                {{ form.address }}
-                                {% if form.address.errors %}
-                                    <p class="text-red-600 text-xs mt-1 font-medium">{{ form.address.errors.0 }}</p>
-                                {% endif %}
-                            </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1" for="{{ form.phone.id_for_label }}">Téléphone officiel *</label>
+                            {{ form.phone }}
+                            {% if form.phone.errors %}
+                                <p class="text-red-600 text-xs mt-1 font-medium">{{ form.phone.errors.0 }}</p>
+                            {% endif %}
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -1,0 +1,38 @@
+{% extends 'adminpanel/admin_base.html' %}
+{% load static %}
+
+{% block title %}Rapports - Administration - DONIA{% endblock %}
+
+{% block dashboard_content %}
+<div class="max-w-2xl space-y-6">
+
+    <div>
+        <h1 class="text-xl sm:text-2xl font-extrabold font-heading text-slate-900">Rapports</h1>
+        <p class="text-xs text-slate-500 mt-1">Générez un rapport d'activité global de la plateforme au format PDF.</p>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xs">
+        <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
+                <i data-lucide="file-text" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h2 class="text-sm font-bold text-slate-900">Rapport global DONIA</h2>
+                <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                    Ce document récapitule l'ensemble des utilisateurs inscrits ({{ users_count }}), des besoins publiés
+                    ({{ needs_count }}) et des dons enregistrés ({{ donations_count }}) sur la plateforme, avec le
+                    classement des orphelinats les plus soutenus.
+                </p>
+            </div>
+        </div>
+
+        <div class="mt-6 pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p class="text-[11px] text-slate-400">Généré à la demande, basé sur les données actuelles de la plateforme.</p>
+            <a href="{% url 'admin_download_report' %}" class="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-xs transition-colors flex items-center justify-center gap-2">
+                <i data-lucide="download" class="w-4 h-4"></i> Télécharger le rapport (PDF)
+            </a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

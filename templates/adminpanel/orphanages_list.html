@@ -1,0 +1,80 @@
+{% extends 'adminpanel/admin_base.html' %}
+{% load static %}
+
+{% block title %}Orphelinats - Administration - DONIA{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-xl sm:text-2xl font-extrabold font-heading text-slate-900">Orphelinats</h1>
+            <p class="text-xs text-slate-500 mt-1">Structures inscrites sur la plateforme et leur activité.</p>
+        </div>
+        <form method="get" class="flex items-center gap-2">
+            <input type="text" name="q" value="{{ query }}" placeholder="Rechercher un orphelinat..."
+                class="px-3 py-2 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-brand-400">
+            <button type="submit" class="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold transition-colors">Rechercher</button>
+        </form>
+    </div>
+
+    {% if page_obj.object_list %}
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        {% for o in page_obj %}
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
+            <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
+                        <i data-lucide="building-2" class="w-5 h-5"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <h3 class="font-bold text-slate-900 text-xs truncate">{{ o.orphanage_name|default:"Structure non renseignée" }}</h3>
+                        <p class="text-[11px] text-slate-500 truncate">{{ o.email }}</p>
+                    </div>
+                </div>
+                {% if o.is_approved %}
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">Validé</span>
+                {% else %}
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-800 border border-amber-200 shrink-0">En attente</span>
+                {% endif %}
+            </div>
+
+            <div class="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-slate-100">
+                <div>
+                    <span class="block text-lg font-black font-heading text-slate-900">{{ o.needs_count }}</span>
+                    <span class="text-[10px] text-slate-500 font-medium">Besoins publiés</span>
+                </div>
+                <div>
+                    <span class="block text-lg font-black font-heading text-slate-900">{{ o.total_collected|default:0|floatformat:0 }}</span>
+                    <span class="text-[10px] text-slate-500 font-medium">FCFA collectés</span>
+                </div>
+                <div>
+                    <span class="block text-lg font-black font-heading text-slate-900">{{ o.team_size }}</span>
+                    <span class="text-[10px] text-slate-500 font-medium">Membre{{ o.team_size|pluralize }} d'équipe</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="flex items-center justify-center gap-2 pt-4">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&q={{ query }}" class="px-3 py-2 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100">Précédent</a>
+        {% endif %}
+        <span class="px-3 py-2 text-xs font-semibold text-slate-500">Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&q={{ query }}" class="px-3 py-2 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100">Suivant</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="bg-white rounded-xl border border-dashed border-slate-300 p-12 text-center">
+        <i data-lucide="building-2" class="w-8 h-8 text-slate-300 mx-auto mb-3"></i>
+        <p class="text-sm font-bold text-slate-700">Aucun orphelinat trouvé</p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

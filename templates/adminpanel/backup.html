@@ -1,0 +1,45 @@
+{% extends 'adminpanel/admin_base.html' %}
+{% load static %}
+
+{% block title %}Sauvegarde - Administration - DONIA{% endblock %}
+
+{% block dashboard_content %}
+<div class="max-w-2xl space-y-6">
+
+    <div>
+        <h1 class="text-xl sm:text-2xl font-extrabold font-heading text-slate-900">Sauvegarde des données</h1>
+        <p class="text-xs text-slate-500 mt-1">Exportez une copie de sécurité des données métier de la plateforme.</p>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xs">
+        <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                <i data-lucide="database-backup" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h2 class="text-sm font-bold text-slate-900">Export complet (JSON)</h2>
+                <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                    Cet export contient l'ensemble des données métier : utilisateurs, orphelinats, besoins, dons,
+                    catégories et notifications. Conservez ce fichier en lieu sûr — il permet de restaurer la
+                    plateforme en cas d'incident.
+                </p>
+            </div>
+        </div>
+
+        <div class="mt-6 pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p class="text-[11px] text-slate-400">Dernière génération à la demande : {{ generated_at|date:"d M Y à H:i" }}</p>
+            <a href="{% url 'admin_download_backup' %}" class="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-xs transition-colors flex items-center justify-center gap-2">
+                <i data-lucide="download" class="w-4 h-4"></i> Télécharger la sauvegarde (JSON)
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+        <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
+        <p class="text-[11px] text-amber-800 leading-relaxed">
+            Ce fichier contient des données sensibles (comptes utilisateurs, documents liés). Ne le partagez qu'avec des personnes autorisées.
+        </p>
+    </div>
+
+</div>
+{% endblock %}

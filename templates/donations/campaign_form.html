@@ -1,0 +1,54 @@
+{% extends 'donations/orphelinat_base.html' %}
+{% load static %}
+
+{% block title %}{% if is_edit %}Modifier la campagne{% else %}Nouvelle campagne{% endif %} - DONIA{% endblock %}
+
+{% block dashboard_content %}
+<div class="max-w-2xl space-y-6">
+
+    <a href="{% url 'campaigns_list' %}" class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-brand-600">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Retour aux campagnes
+    </a>
+
+    <div>
+        <h1 class="text-xl sm:text-2xl font-extrabold font-heading text-slate-900">
+            {% if is_edit %}Modifier la campagne{% else %}Nouvelle campagne{% endif %}
+        </h1>
+        <p class="text-xs text-slate-500 mt-1">
+            {% if is_edit %}Mettez à jour les informations de cette campagne.{% else %}Une fois créée, associez-y vos besoins depuis le formulaire de publication.{% endif %}
+        </p>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xs">
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+
+            <div>
+                <label for="{{ form.title.id_for_label }}" class="block text-xs font-bold text-slate-700 mb-1.5">{{ form.title.label }}</label>
+                {{ form.title }}
+                {% if form.title.errors %}<p class="text-[11px] text-red-600 mt-1">{{ form.title.errors.0 }}</p>{% endif %}
+            </div>
+
+            <div>
+                <label for="{{ form.description.id_for_label }}" class="block text-xs font-bold text-slate-700 mb-1.5">{{ form.description.label }}</label>
+                {{ form.description }}
+                {% if form.description.errors %}<p class="text-[11px] text-red-600 mt-1">{{ form.description.errors.0 }}</p>{% endif %}
+            </div>
+
+            {% if is_edit %}
+            <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 text-[11px] text-slate-500">
+                {{ campaign.needs_count }} besoin{{ campaign.needs_count|pluralize }} associé{{ campaign.needs_count|pluralize }} à cette campagne.
+                Gérez l'association depuis le formulaire de chaque besoin.
+            </div>
+            {% endif %}
+
+            <div class="pt-4 flex justify-end gap-2">
+                <a href="{% url 'campaigns_list' %}" class="px-4 py-2.5 rounded-lg bg-white border border-slate-200 text-slate-600 font-semibold text-xs hover:bg-slate-50 transition-colors">Annuler</a>
+                <button type="submit" class="px-5 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-xs transition-colors flex items-center gap-1.5">
+                    <i data-lucide="save" class="w-3.5 h-3.5"></i> {% if is_edit %}Enregistrer les modifications{% else %}Créer la campagne{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

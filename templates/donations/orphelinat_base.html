@@ -34,7 +34,7 @@
                             {{ user.first_name|first|default:user.username|first|upper }}
                         </div>
                     {% endif %}
-                    <span class="hidden sm:inline">{{ user.orphanage_name|default:user.first_name|default:user.username }}</span>
+                    <span class="hidden sm:inline">{{ user.organization_account.orphanage_name|default:user.first_name|default:user.username }}</span>
                 </a>
 
                 <a href="{% url 'logout' %}" class="p-2.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Déconnexion">
@@ -47,7 +47,7 @@
 {% endblock %}
 
 {% block content %}
-{% with active=request.resolver_match.url_name %}
+{% with active=request.resolver_match.url_name org=user.organization_account %}
 <div class="flex flex-1 min-h-0 bg-slate-50">
 
     <!-- Overlay mobile -->
@@ -61,17 +61,25 @@
             <a href="{% url 'orphelinat_dashboard' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors {% if active == 'orphelinat_dashboard' %}bg-brand-50 text-brand-700 border border-brand-200{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
                 <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Vue d'ensemble
             </a>
-            <a href="{% url 'my_needs' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors {% if active == 'my_needs' or active == 'need_create' or active == 'need_edit' %}bg-brand-50 text-brand-700 border border-brand-200{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
-                <i data-lucide="clipboard-list" class="w-4 h-4"></i> Mes besoins
+            <a href="{% url 'my_needs' %}" class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors {% if not org.is_approved %}opacity-50{% endif %} {% if active == 'my_needs' or active == 'need_create' or active == 'need_edit' %}bg-brand-50 text-brand-700 border border-brand-200{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+                <span class="flex items-center gap-3"><i data-lucide="clipboard-list" class="w-4 h-4"></i> Mes besoins</span>
+                {% if not org.is_approved %}<i data-lucide="lock" class="w-3.5 h-3.5 text-slate-400"></i>{% endif %}
             </a>
-            <a href="{% url 'received_donations' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors {% if active == 'received_donations' %}bg-brand-50 text-brand-700 border border-brand-200{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
-                <i data-lucide="hand-coins" class="w-4 h-4"></i> Dons reçus
+            <a href="{% url 'campaigns_list' %}" class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors {% if not org.is_approved %}opacity-50{% endif %} {% if active == 'campaigns_list' or active == 'campaign_create' or active == 'campaign_edit' or active == 'campaign_detail' %}bg-brand-50 text-brand-700 border border-brand-200{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+                <span class="flex items-center gap-3"><i data-lucide="megaphone" class="w-4 h-4"></i> Campagnes</span>
+                {% if not org.is_approved %}<i data-lucide="lock" class="w-3.5 h-3.5 text-slate-400"></i>{% endif %}
             </a>
-            <a href="{% url 'orphelinat_statistics' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors {% if active == 'orphelinat_statistics' %}bg-brand-50 text-brand-700 border border-brand-200{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
-                <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Statistiques
+            <a href="{% url 'received_donations' %}" class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors {% if not org.is_approved %}opacity-50{% endif %} {% if active == 'received_donations' %}bg-brand-50 text-brand-700 border border-brand-200{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+                <span class="flex items-center gap-3"><i data-lucide="hand-coins" class="w-4 h-4"></i> Dons reçus</span>
+                {% if not org.is_approved %}<i data-lucide="lock" class="w-3.5 h-3.5 text-slate-400"></i>{% endif %}
             </a>
-            <a href="{% url 'orphelinat_reports' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors {% if active == 'orphelinat_reports' %}bg-brand-50 text-brand-700 border border-brand-200{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
-                <i data-lucide="file-text" class="w-4 h-4"></i> Rapports
+            <a href="{% url 'orphelinat_statistics' %}" class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors {% if not org.is_approved %}opacity-50{% endif %} {% if active == 'orphelinat_statistics' %}bg-brand-50 text-brand-700 border border-brand-200{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+                <span class="flex items-center gap-3"><i data-lucide="bar-chart-3" class="w-4 h-4"></i> Statistiques</span>
+                {% if not org.is_approved %}<i data-lucide="lock" class="w-3.5 h-3.5 text-slate-400"></i>{% endif %}
+            </a>
+            <a href="{% url 'orphelinat_reports' %}" class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors {% if not org.is_approved %}opacity-50{% endif %} {% if active == 'orphelinat_reports' %}bg-brand-50 text-brand-700 border border-brand-200{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+                <span class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4"></i> Rapports</span>
+                {% if not org.is_approved %}<i data-lucide="lock" class="w-3.5 h-3.5 text-slate-400"></i>{% endif %}
             </a>
             <a href="{% url 'notifications_list' %}" class="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors {% if active == 'notifications_list' %}bg-brand-50 text-brand-700 border border-brand-200{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
                 <span class="flex items-center gap-3"><i data-lucide="bell" class="w-4 h-4"></i> Notifications</span>
@@ -81,6 +89,11 @@
             </a>
 
             <p class="px-3 mt-6 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Compte</p>
+            {% if not user.is_team_member %}
+            <a href="{% url 'team_manage' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors {% if active == 'team_manage' %}bg-brand-50 text-brand-700 border border-brand-200{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+                <i data-lucide="users" class="w-4 h-4"></i> Mon équipe
+            </a>
+            {% endif %}
             <a href="{% url 'profile' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors {% if active == 'profile' %}bg-brand-50 text-brand-700 border border-brand-200{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
                 <i data-lucide="building-2" class="w-4 h-4"></i> Profil de l'orphelinat
             </a>

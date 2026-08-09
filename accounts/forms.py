@@ -63,11 +63,6 @@ class EmailAuthenticationForm(forms.Form):
     def confirm_login_allowed(self, user):
         if not user.is_active:
             raise ValidationError("Ce compte a été désactivé.", code='inactive')
-        if user.is_responsable_role and not user.is_approved and not user.is_superuser:
-            raise ValidationError(
-                "Votre compte Responsable d'orphelinat est en cours de vérification par un administrateur. Vous recevrez un accès dès validation.",
-                code='pending_approval'
-            )
 
     def get_user(self):
         return self.user_cache
@@ -132,15 +127,12 @@ class ResponsableRegistrationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'phone', 'address', 'orphanage_name', 'orphanage_document']
+        fields = ['first_name', 'last_name', 'email', 'phone']
         widgets = {
             'first_name': forms.TextInput(attrs={'class': INPUT_CLASSES, 'placeholder': 'Prénom du responsable'}),
             'last_name': forms.TextInput(attrs={'class': INPUT_CLASSES, 'placeholder': 'Nom du responsable'}),
             'email': forms.EmailInput(attrs={'class': INPUT_CLASSES, 'placeholder': 'contact@orphelinat.org'}),
             'phone': forms.TextInput(attrs={'class': INPUT_CLASSES, 'placeholder': 'Numéro officiel'}),
-            'address': forms.TextInput(attrs={'class': INPUT_CLASSES, 'placeholder': 'Adresse géographique'}),
-            'orphanage_name': forms.TextInput(attrs={'class': INPUT_CLASSES, 'placeholder': 'Nom officiel de l\'orphelinat'}),
-            'orphanage_document': forms.FileInput(attrs={'class': FILE_INPUT_CLASSES}),
         }
 
     def clean_email(self):
@@ -160,6 +152,91 @@ class ResponsableRegistrationForm(forms.ModelForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.role = User.Role.RESPONSABLE
+        user.is_approved = False
+        user.username = self.cleaned_data['email']
+        user.set_password(self.cleaned_data['password'])
+        if commit:
+            user.save()
+        return user
+
+
+class OrphanageOnboardingForm(forms.ModelForm):
+    """Formulaire de complétion du profil de l'orphelinat, à remplir après la première connexion."""
+
+    class Meta:
+        model = User
+        fields = ['orphanage_name', 'address', 'orphanage_document', 'id_card_front', 'id_card_back']
+        widgets = {
+            'orphanage_name': forms.TextInput(attrs={'class': INPUT_CLASSES, 'placeholder': "Nom officiel de l'orphelinat"}),
+            'address': forms.TextInput(attrs={'class': INPUT_CLASSES, 'placeholder': 'Adresse complète de la structure'}),
+            'orphanage_document': forms.FileInput(attrs={'class': FILE_INPUT_CLASSES}),
+            'id_card_front': forms.FileInput(attrs={'class': FILE_INPUT_CLASSES}),
+            'id_card_back': forms.FileInput(attrs={'class': FILE_INPUT_CLASSES}),
+        }
+        labels = {
+            'orphanage_name': "Nom de l'orphelinat",
+            'address': 'Adresse',
+            'orphanage_document': 'Justificatif officiel / Agrément',
+            'id_card_front': "Carte d'identité (CNI) — Recto",
+            'id_card_back': "Carte d'identité (CNI) — Verso",
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.fields:
+            self.fields[field_name].required = True
+
+
+class TeamInviteForm(forms.Form):
+    """Formulaire d'invitation d'un membre d'équipe."""
+    email = forms.EmailField(
+        label="Email de la personne à inviter",
+        widget=forms.EmailInput(attrs={'class': INPUT_CLASSES, 'placeholder': 'collegue@exemple.com'})
+    )
+
+
+class TeamMemberJoinForm(forms.ModelForm):
+    """Formulaire de création de compte pour un membre d'équipe invité (accès immédiat, sans onboarding)."""
+    password = forms.CharField(
+        label="Mot de passe",
+        widget=forms.PasswordInput(attrs={'class': INPUT_CLASSES, 'placeholder': 'Au moins 8 caractères'})
+    )
+    password_confirm = forms.CharField(
+        label="Confirmer le mot de passe",
+        widget=forms.PasswordInput(attrs={'class': INPUT_CLASSES, 'placeholder': 'Répétez le mot de passe'})
+    )
+
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'phone']
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': INPUT_CLASSES, 'placeholder': 'Votre prénom'}),
+            'last_name': forms.TextInput(attrs={'class': INPUT_CLASSES, 'placeholder': 'Votre nom'}),
+            'email': forms.EmailInput(attrs={'class': INPUT_CLASSES, 'placeholder': 'exemple@email.com'}),
+            'phone': forms.TextInput(attrs={'class': INPUT_CLASSES, 'placeholder': '+221 77 000 00 00'}),
+        }
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email__iexact=email).exists():
+            raise ValidationError("Un compte avec cette adresse email existe déjà.")
+        return email
+
+    def clean(self):
+        cleaned_data = super().clean()
+        p1 = cleaned_data.get('password')
+        p2 = cleaned_data.get('password_confirm')
+        if p1 and p2 and p1 != p2:
+            self.add_error('password_confirm', "Les deux mots de passe ne correspondent pas.")
+        return cleaned_data
+
+    def save(self, organization_owner, commit=True):
+        user = super().save(commit=False)
+        user.role = User.Role.RESPONSABLE
+        user.organization_owner = organization_owner
+        # Le membre hérite des droits du responsable principal tant qu'il fait partie de
+        # l'équipe (via organization_account) ; s'il est retiré de l'équipe plus tard, ce
+        # compte redevient un responsable indépendant standard, donc non approuvé par défaut.
         user.is_approved = False
         user.username = self.cleaned_data['email']
         user.set_password(self.cleaned_data['password'])
@@ -188,7 +265,7 @@ class ResponsableProfileUpdateForm(forms.ModelForm):
         model = User
         fields = [
             'first_name', 'last_name', 'phone', 'address', 'profile_picture',
-            'orphanage_name', 'orphanage_document'
+            'orphanage_name', 'orphanage_document', 'id_card_front', 'id_card_back'
         ]
         widgets = {
             'first_name': forms.TextInput(attrs={'class': INPUT_CLASSES}),
@@ -198,8 +275,12 @@ class ResponsableProfileUpdateForm(forms.ModelForm):
             'profile_picture': forms.FileInput(attrs={'class': FILE_INPUT_CLASSES}),
             'orphanage_name': forms.TextInput(attrs={'class': INPUT_CLASSES}),
             'orphanage_document': forms.FileInput(attrs={'class': FILE_INPUT_CLASSES}),
+            'id_card_front': forms.FileInput(attrs={'class': FILE_INPUT_CLASSES}),
+            'id_card_back': forms.FileInput(attrs={'class': FILE_INPUT_CLASSES}),
         }
         labels = {
             'orphanage_name': "Nom officiel de l'orphelinat",
             'orphanage_document': 'Justificatif officiel / Agrément',
+            'id_card_front': "Carte d'identité (CNI) — Recto",
+            'id_card_back': "Carte d'identité (CNI) — Verso",
         }

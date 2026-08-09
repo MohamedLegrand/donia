@@ -67,6 +67,9 @@
             <a href="{% url 'donation_history' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors {% if active == 'donation_history' %}bg-brand-50 text-brand-700 border border-brand-200{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
                 <i data-lucide="history" class="w-4 h-4"></i> Mes dons
             </a>
+            <a href="{% url 'followed_needs' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors {% if active == 'followed_needs' %}bg-brand-50 text-brand-700 border border-brand-200{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+                <i data-lucide="star" class="w-4 h-4"></i> Mes favoris
+            </a>
             <a href="{% url 'notifications_list' %}" class="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors {% if active == 'notifications_list' %}bg-brand-50 text-brand-700 border border-brand-200{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
                 <span class="flex items-center gap-3"><i data-lucide="bell" class="w-4 h-4"></i> Notifications</span>
                 {% if unread_notifications_count > 0 %}

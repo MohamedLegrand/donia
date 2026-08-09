@@ -17,7 +17,7 @@ from reportlab.pdfgen import canvas
 from .colors import category_color
 from .decorators import donateur_required
 from .forms import DonationForm
-from .models import Category, Donation, Need, Notification
+from .models import Campaign, Category, Donation, Need, NeedFollow, Notification
 
 
 @donateur_required
@@ -122,7 +122,44 @@ def need_detail_view(request, pk):
     """Détail d'un besoin avec formulaire de contribution."""
     need = get_object_or_404(Need.objects.select_related('orphanage', 'category'), pk=pk)
     form = DonationForm()
-    return render(request, 'donations/need_detail.html', {'need': need, 'form': form})
+    is_following = NeedFollow.objects.filter(donateur=request.user, need=need).exists()
+    return render(request, 'donations/need_detail.html', {'need': need, 'form': form, 'is_following': is_following})
+
+
+@donateur_required
+def toggle_follow_need_view(request, pk):
+    """Ajoute ou retire un besoin des favoris suivis par le donateur."""
+    need = get_object_or_404(Need, pk=pk)
+    if request.method == 'POST':
+        follow, created = NeedFollow.objects.get_or_create(donateur=request.user, need=need)
+        if not created:
+            follow.delete()
+            messages.info(request, f"Vous ne suivez plus « {need.title} ».")
+        else:
+            messages.success(request, f"Vous suivez maintenant « {need.title} ». Vous serez notifié de sa progression.")
+
+    next_url = request.POST.get('next') or reverse('need_detail', kwargs={'pk': need.pk})
+    return redirect(next_url)
+
+
+@donateur_required
+def followed_needs_view(request):
+    """Liste des besoins suivis (favoris) par le donateur."""
+    follows = NeedFollow.objects.filter(donateur=request.user).select_related(
+        'need', 'need__orphanage', 'need__category'
+    ).order_by('-created_at')
+
+    paginator = Paginator(follows, 9)
+    page_obj = paginator.get_page(request.GET.get('page'))
+    return render(request, 'donations/followed_needs.html', {'page_obj': page_obj})
+
+
+@donateur_required
+def campaign_public_detail_view(request, pk):
+    """Détail public d'une campagne et des besoins qui la composent."""
+    campaign = get_object_or_404(Campaign.objects.select_related('orphanage'), pk=pk)
+    needs = campaign.needs.select_related('category').order_by('-created_at')
+    return render(request, 'donations/campaign_public_detail.html', {'campaign': campaign, 'needs': needs})
 
 
 @donateur_required
@@ -143,6 +180,7 @@ def make_donation_view(request, pk):
 
             if donation.donation_type == Donation.DonationType.FINANCIER and donation.amount:
                 Need.objects.filter(pk=need.pk).update(collected_amount=F('collected_amount') + donation.amount)
+                need.refresh_from_db(fields=['collected_amount'])
 
             Notification.objects.create(
                 user=request.user,
@@ -157,6 +195,16 @@ def make_donation_view(request, pk):
                 message=f"{request.user.get_full_name() or request.user.username} a contribué au besoin « {need.title} ».",
                 level=Notification.Level.INFO,
             )
+
+            followers = NeedFollow.objects.filter(need=need).exclude(donateur=request.user).select_related('donateur')
+            for follow in followers:
+                Notification.objects.create(
+                    user=follow.donateur,
+                    title="Un besoin que vous suivez a progressé",
+                    message=f"« {need.title} » vient de recevoir un nouveau don ({need.coverage_percent}% financé).",
+                    level=Notification.Level.INFO,
+                    link=reverse('need_detail', kwargs={'pk': need.pk}),
+                )
 
         messages.success(
             request,

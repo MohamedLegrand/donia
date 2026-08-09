@@ -1,0 +1,111 @@
+{% extends 'adminpanel/admin_base.html' %}
+{% load static %}
+
+{% block title %}Validations - Administration - DONIA{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+
+    <div>
+        <h1 class="text-xl sm:text-2xl font-extrabold font-heading text-slate-900">Validation des comptes</h1>
+        <p class="text-xs text-slate-500 mt-1">Examinez les demandes d'inscription des responsables d'orphelinat.</p>
+    </div>
+
+    {% if page_obj.object_list %}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {% for u in page_obj %}
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
+            <div class="flex items-start justify-between mb-3">
+                <div>
+                    <h3 class="font-bold text-slate-900 text-sm">{{ u.orphanage_name|default:"Structure non renseignée" }}</h3>
+                    <p class="text-[11px] text-slate-500">{{ u.get_full_name }} • {{ u.email }}</p>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200 shrink-0">En attente</span>
+            </div>
+
+            <div class="space-y-1.5 text-[11px] text-slate-500 mb-4">
+                <p class="flex items-center gap-1.5"><i data-lucide="phone" class="w-3.5 h-3.5 text-slate-400"></i> {{ u.phone|default:"Non renseigné" }}</p>
+                <p class="flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400"></i> {{ u.address|default:"Non renseignée" }}</p>
+                <p class="flex items-center gap-1.5"><i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400"></i> Inscrit le {{ u.date_joined|date:"d M Y" }}</p>
+            </div>
+
+            <!-- Pièces jointes : lecture directe dans la plateforme -->
+            <div class="space-y-3 mb-4">
+                <div>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Justificatif officiel</p>
+                    {% if u.orphanage_document %}
+                        <div class="rounded-lg border border-slate-200 overflow-hidden bg-slate-50">
+                            <iframe src="{{ u.orphanage_document.url }}" class="w-full h-48 bg-white" title="Justificatif officiel"></iframe>
+                        </div>
+                        <a href="{{ u.orphanage_document.url }}" target="_blank" class="inline-flex items-center gap-1 mt-1 text-[11px] text-brand-600 hover:underline font-semibold">
+                            <i data-lucide="maximize-2" class="w-3 h-3"></i> Ouvrir en plein écran
+                        </a>
+                    {% else %}
+                        <p class="flex items-center gap-1.5 text-red-500 text-[11px]"><i data-lucide="file-x" class="w-3.5 h-3.5"></i> Aucun justificatif fourni</p>
+                    {% endif %}
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">CNI — Recto</p>
+                        {% if u.id_card_front %}
+                            <a href="{{ u.id_card_front.url }}" target="_blank">
+                                <img src="{{ u.id_card_front.url }}" alt="CNI recto" class="w-full h-28 object-cover rounded-lg border border-slate-200 hover:opacity-90 transition-opacity">
+                            </a>
+                        {% else %}
+                            <p class="flex items-center gap-1.5 text-red-500 text-[11px]"><i data-lucide="file-x" class="w-3.5 h-3.5"></i> Manquante</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">CNI — Verso</p>
+                        {% if u.id_card_back %}
+                            <a href="{{ u.id_card_back.url }}" target="_blank">
+                                <img src="{{ u.id_card_back.url }}" alt="CNI verso" class="w-full h-28 object-cover rounded-lg border border-slate-200 hover:opacity-90 transition-opacity">
+                            </a>
+                        {% else %}
+                            <p class="flex items-center gap-1.5 text-red-500 text-[11px]"><i data-lucide="file-x" class="w-3.5 h-3.5"></i> Manquante</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 pt-3 border-t border-slate-100">
+                <form method="post" action="{% url 'admin_approve_account' u.pk %}" class="flex-1">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors">
+                        <i data-lucide="check" class="w-3.5 h-3.5"></i> Valider
+                    </button>
+                </form>
+                <form method="post" action="{% url 'admin_reject_account' u.pk %}" class="flex-1" onsubmit="return confirm('Rejeter et supprimer définitivement cette demande d\'inscription ?');">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full py-2 px-3 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors">
+                        <i data-lucide="x" class="w-3.5 h-3.5"></i> Rejeter
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="flex items-center justify-center gap-2 pt-4">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-2 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100">Précédent</a>
+        {% endif %}
+        <span class="px-3 py-2 text-xs font-semibold text-slate-500">Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-2 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100">Suivant</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="bg-white rounded-xl border border-dashed border-slate-300 p-12 text-center">
+        <i data-lucide="check-circle-2" class="w-8 h-8 text-emerald-300 mx-auto mb-3"></i>
+        <p class="text-sm font-bold text-slate-700">Aucune demande en attente</p>
+        <p class="text-xs text-slate-500 mt-1">Toutes les inscriptions responsables ont été traitées.</p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

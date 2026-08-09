@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'accounts',
     'donations',
+    'adminpanel',
 ]
 
 MIDDLEWARE = [
@@ -64,6 +65,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'donations.context_processors.notifications',
+                'adminpanel.context_processors.pending_approvals',
             ],
         },
     },
@@ -128,6 +130,10 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Autorise l'affichage des fichiers médias (justificatifs, CNI) dans une <iframe> de la
+# plateforme elle-même (aperçu direct côté admin) tout en bloquant tout cadrage externe.
+X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'login_redirect'
