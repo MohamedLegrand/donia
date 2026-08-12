@@ -25,7 +25,13 @@ SECRET_KEY = 'django-insecure-2^d8_4is+&=a77%ate41gxmv7gnusoommd*jxdm1=r(k121d!)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.ngrok-free.app', '.ngrok-free.dev', '.ngrok.io', '.ngrok.dev', '.ngrok.app']
+
+# Permet les requêtes POST (formulaires, CSRF) depuis un tunnel ngrok en développement.
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.ngrok-free.app', 'https://*.ngrok-free.dev',
+    'https://*.ngrok.io', 'https://*.ngrok.dev', 'https://*.ngrok.app',
+]
 
 
 # Application definition
