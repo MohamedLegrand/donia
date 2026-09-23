@@ -29,8 +29,9 @@ class CategoryForm(forms.ModelForm):
 
     class Meta:
         model = Category
-        fields = ['name', 'icon']
+        fields = ['name', 'icon', 'priority_weight']
         widgets = {
             'name': forms.TextInput(attrs={'class': INPUT_CLASSES, 'placeholder': 'Ex : Santé & Médicaments'}),
+            'priority_weight': forms.Select(attrs={'class': INPUT_CLASSES}),
         }
-        labels = {'name': 'Nom de la catégorie'}
+        labels = {'name': 'Nom de la catégorie', 'priority_weight': 'Niveau de criticité'}

@@ -102,11 +102,127 @@
 </div>
 {% endwith %}
 
+<!-- Assistant IA (chatbot d'aide aux donateurs) -->
+<div id="ai-chat-widget" class="fixed bottom-5 right-5 z-50">
+    <button type="button" id="ai-chat-toggle"
+        class="w-14 h-14 rounded-full bg-brand-600 hover:bg-brand-700 text-white shadow-lg flex items-center justify-center transition-transform hover:scale-105"
+        title="Assistant Orphelink">
+        <i data-lucide="message-circle" class="w-6 h-6"></i>
+    </button>
+
+    <div id="ai-chat-panel" class="hidden absolute bottom-16 right-0 w-[22rem] max-w-[90vw] h-[28rem] max-h-[70vh] bg-white rounded-2xl border border-slate-200 shadow-2xl flex flex-col overflow-hidden">
+        <div class="px-4 py-3 bg-brand-600 text-white flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-2">
+                <i data-lucide="sparkles" class="w-4 h-4"></i>
+                <span class="text-sm font-bold">Assistant Orphelink</span>
+            </div>
+            <button type="button" id="ai-chat-close" class="p-1 hover:bg-white/20 rounded-md transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+
+        <div id="ai-chat-messages" class="flex-1 overflow-y-auto px-3 py-3 space-y-2.5 bg-slate-50">
+            <div class="max-w-[85%] px-3 py-2 rounded-xl rounded-bl-sm bg-white border border-slate-200 text-xs text-slate-700">
+                Bonjour 👋 Je peux vous aider à comprendre Orphelink ou à choisir un besoin à soutenir. Que souhaitez-vous savoir ?
+            </div>
+        </div>
+
+        <p id="ai-chat-error" class="hidden px-3 py-1.5 text-[11px] text-red-600 bg-red-50 border-t border-red-100"></p>
+
+        <form id="ai-chat-form" class="p-2.5 border-t border-slate-200 flex items-center gap-2 shrink-0">
+            <input type="text" id="ai-chat-input" autocomplete="off" maxlength="800"
+                class="flex-1 px-3 py-2.5 rounded-lg border border-slate-200 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-500"
+                placeholder="Écrivez votre message...">
+            <button type="submit" id="ai-chat-send"
+                class="w-9 h-9 shrink-0 rounded-lg bg-brand-600 hover:bg-brand-700 text-white flex items-center justify-center transition-colors">
+                <i data-lucide="send" class="w-4 h-4"></i>
+            </button>
+        </form>
+    </div>
+</div>
+
 <script>
     function toggleDashboardSidebar() {
         document.getElementById('dashboard-sidebar').classList.toggle('-translate-x-full');
         document.getElementById('sidebar-overlay').classList.toggle('hidden');
     }
+
+    (function () {
+        const toggleBtn = document.getElementById('ai-chat-toggle');
+        const closeBtn = document.getElementById('ai-chat-close');
+        const panel = document.getElementById('ai-chat-panel');
+        const messagesBox = document.getElementById('ai-chat-messages');
+        const errorBox = document.getElementById('ai-chat-error');
+        const form = document.getElementById('ai-chat-form');
+        const input = document.getElementById('ai-chat-input');
+        const sendBtn = document.getElementById('ai-chat-send');
+        const history = [];
+
+        function togglePanel(show) {
+            panel.classList.toggle('hidden', !show);
+            if (show) input.focus();
+        }
+
+        toggleBtn.addEventListener('click', function () { togglePanel(panel.classList.contains('hidden')); });
+        closeBtn.addEventListener('click', function () { togglePanel(false); });
+
+        function appendMessage(role, text) {
+            const bubble = document.createElement('div');
+            if (role === 'user') {
+                bubble.className = 'max-w-[85%] ml-auto px-3 py-2 rounded-xl rounded-br-sm bg-brand-600 text-white text-xs';
+            } else {
+                bubble.className = 'max-w-[85%] px-3 py-2 rounded-xl rounded-bl-sm bg-white border border-slate-200 text-xs text-slate-700';
+            }
+            bubble.textContent = text;
+            messagesBox.appendChild(bubble);
+            messagesBox.scrollTop = messagesBox.scrollHeight;
+        }
+
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            const message = input.value.trim();
+            if (!message) return;
+
+            errorBox.classList.add('hidden');
+            appendMessage('user', message);
+            history.push({ role: 'user', content: message });
+            input.value = '';
+            input.disabled = true;
+            sendBtn.disabled = true;
+
+            fetch("{% url 'ai_chat_message' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: JSON.stringify({ message: message, history: history }),
+            })
+                .then(function (response) {
+                    return response.json().then(function (data) {
+                        return { ok: response.ok, data: data };
+                    });
+                })
+                .then(function (result) {
+                    if (result.ok) {
+                        appendMessage('assistant', result.data.reply);
+                        history.push({ role: 'assistant', content: result.data.reply });
+                    } else {
+                        errorBox.textContent = result.data.error || "L'assistant est momentanément indisponible.";
+                        errorBox.classList.remove('hidden');
+                    }
+                })
+                .catch(function () {
+                    errorBox.textContent = "Impossible de contacter l'assistant. Vérifiez votre connexion.";
+                    errorBox.classList.remove('hidden');
+                })
+                .finally(function () {
+                    input.disabled = false;
+                    sendBtn.disabled = false;
+                    input.focus();
+                });
+        });
+    })();
 </script>
 {% endblock %}
 

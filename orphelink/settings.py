@@ -10,10 +10,29 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+def _load_dotenv(path):
+    """Charge les variables de .env dans l'environnement sans dépendance externe."""
+    if not path.exists():
+        return
+    for line in path.read_text(encoding='utf-8').splitlines():
+        line = line.strip()
+        if not line or line.startswith('#') or '=' not in line:
+            continue
+        key, _, value = line.partition('=')
+        os.environ.setdefault(key.strip(), value.strip())
+
+
+_load_dotenv(BASE_DIR / '.env')
+
+# Clé API Groq utilisée pour la génération de texte assistée par IA (voir donations/ai.py).
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
 
 
 # Quick-start development settings - unsuitable for production
@@ -46,6 +65,7 @@ INSTALLED_APPS = [
     'accounts',
     'donations',
     'adminpanel',
+    'ai_assistant',
 ]
 
 MIDDLEWARE = [

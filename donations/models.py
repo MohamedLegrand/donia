@@ -7,12 +7,26 @@ from django.utils import timezone
 
 class Category(models.Model):
     """Catégorie de besoin (santé, nutrition, éducation, ...)."""
+
+    class PriorityWeight(models.IntegerChoices):
+        TRES_FAIBLE = 1, 'Très faible'
+        FAIBLE = 2, 'Faible'
+        NORMALE = 3, 'Normale'
+        ELEVEE = 4, 'Élevée'
+        CRITIQUE = 5, 'Critique'
+
     name = models.CharField(max_length=100, unique=True, verbose_name="Nom")
     icon = models.CharField(
         max_length=50,
         default='tag',
         verbose_name="Icône (Lucide)",
         help_text="Nom de l'icône Lucide utilisée dans l'interface (ex: heart-pulse)."
+    )
+    priority_weight = models.PositiveSmallIntegerField(
+        choices=PriorityWeight.choices,
+        default=PriorityWeight.NORMALE,
+        verbose_name="Niveau de criticité",
+        help_text="Influence le score de priorité des besoins de cette catégorie dans les listes et recommandations aux donateurs."
     )
 
     class Meta:
@@ -135,16 +149,36 @@ class Need(models.Model):
         return self.collected_amount >= self.target_amount
 
     @property
+    def urgency_score(self):
+        """Urgence temporelle (0-100) : ancienneté du besoin et écart de financement restant."""
+        days_open = (timezone.now() - self.created_at).days
+        age_component = min(days_open, 30) / 30 * 100
+        funding_gap_component = 100 - self.coverage_percent
+        return round((age_component * 0.5) + (funding_gap_component * 0.5))
+
+    @property
+    def importance_score(self):
+        """Importance (0-100) basée sur le nombre d'enfants concernés par le besoin."""
+        return round(min(self.children_count, 50) / 50 * 100)
+
+    @property
+    def category_score(self):
+        """Criticité (0-100) dérivée du niveau de criticité défini par l'administrateur pour la catégorie."""
+        return self.category.priority_weight * 20
+
+    @property
     def priority_score(self):
         """
-        Score d'urgence calculé automatiquement (0-100) à partir de :
-        le nombre d'enfants concernés, l'ancienneté du besoin et son taux de couverture.
+        Score de priorisation intelligente (0-100), combinant trois critères :
+        - urgence (45%) : ancienneté du besoin et écart de financement restant
+        - importance (30%) : nombre d'enfants concernés
+        - catégorie (25%) : niveau de criticité défini par l'administrateur pour la catégorie
         """
-        children_factor = min(self.children_count, 100) * 0.3
-        days_open = (timezone.now() - self.created_at).days
-        age_factor = min(days_open, 30) * 1.2
-        coverage_factor = (100 - self.coverage_percent) * 0.4
-        score = children_factor + age_factor + coverage_factor
+        score = (
+            self.urgency_score * 0.45
+            + self.importance_score * 0.30
+            + self.category_score * 0.25
+        )
         return round(min(score, 100))
 
     @property

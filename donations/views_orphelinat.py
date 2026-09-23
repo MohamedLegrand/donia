@@ -4,10 +4,11 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Count, Sum
 from django.db.models.functions import TruncMonth
-from django.http import FileResponse
+from django.http import FileResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
 from reportlab.lib import colors as rl_colors
 from reportlab.lib.pagesizes import A4
@@ -18,10 +19,12 @@ from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, Tabl
 from accounts.forms import OrphanageOnboardingForm, TeamInviteForm
 from accounts.models import TeamInvite, User
 
+from ai_assistant.services import AIGenerationError, generate_need_description
+
 from .colors import category_color
 from .decorators import approved_responsable_required, responsable_required
 from .forms import CampaignForm, NeedForm, NeedPhotoForm
-from .models import Campaign, Donation, Need, NeedPhoto, Notification
+from .models import Campaign, Category, Donation, Need, NeedPhoto, Notification
 
 FR_MONTHS = ['', 'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc']
 
@@ -184,6 +187,29 @@ def need_edit_view(request, pk):
         form = NeedForm(instance=need, orphanage=org_user)
 
     return render(request, 'donations/need_form.html', {'form': form, 'is_edit': True, 'need': need})
+
+
+@approved_responsable_required
+@require_POST
+def need_generate_description_view(request):
+    """Génère une proposition de description de besoin via l'IA (Groq), à partir du formulaire en cours de saisie."""
+    title = request.POST.get('title', '').strip()
+    children_count = request.POST.get('children_count', '').strip()
+    keywords = request.POST.get('keywords', '').strip()
+    category_name = ''
+    category_id = request.POST.get('category', '').strip()
+    if category_id:
+        category_name = Category.objects.filter(pk=category_id).values_list('name', flat=True).first() or ''
+
+    if not title:
+        return JsonResponse({'error': "Renseignez au moins le titre du besoin avant de générer une description."}, status=400)
+
+    try:
+        description = generate_need_description(title, category_name, children_count, keywords)
+    except AIGenerationError as exc:
+        return JsonResponse({'error': str(exc)}, status=502)
+
+    return JsonResponse({'description': description})
 
 
 @approved_responsable_required

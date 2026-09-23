@@ -24,6 +24,7 @@ urlpatterns = [
     path('dashboard/', include('donations.urls')),
     path('orphelinat/', include('donations.urls_orphelinat')),
     path('administration/', include('adminpanel.urls')),
+    path('ia/', include('ai_assistant.urls')),
     path('', include('accounts.urls')),
 ]
 

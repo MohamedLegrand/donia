@@ -8,6 +8,7 @@ urlpatterns = [
     path('equipe/<int:pk>/retirer/', views.team_remove_member_view, name='team_remove_member'),
     path('besoins/', views.my_needs_view, name='my_needs'),
     path('besoins/nouveau/', views.need_create_view, name='need_create'),
+    path('besoins/generer-description/', views.need_generate_description_view, name='need_generate_description'),
     path('besoins/<int:pk>/modifier/', views.need_edit_view, name='need_edit'),
     path('besoins/<int:pk>/supprimer/', views.need_delete_view, name='need_delete'),
     path('besoins/<int:pk>/cloturer/', views.need_toggle_close_view, name='need_toggle_close'),
