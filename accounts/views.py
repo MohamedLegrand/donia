@@ -15,7 +15,7 @@ from .models import User, TeamInvite
 
 
 def home_view(request):
-    """Page d'accueil de la plateforme DONIA."""
+    """Page d'accueil de la plateforme Orphelink."""
     return render(request, 'accounts/home.html')
 
 

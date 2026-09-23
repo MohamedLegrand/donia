@@ -355,7 +355,7 @@ def download_admin_report_view(request):
     section_style = ParagraphStyle('SectionDonia', parent=styles['Heading2'], textColor=rl_colors.HexColor('#0f172a'), fontSize=12, spaceBefore=12, spaceAfter=6)
 
     elements = [
-        Paragraph("DONIA — Rapport global de la plateforme", title_style),
+        Paragraph("Orphelink — Rapport global de la plateforme", title_style),
         Paragraph(f"Généré le {timezone.now().strftime('%d/%m/%Y à %H:%M')}", subtitle_style),
         Spacer(1, 8 * mm),
     ]
@@ -426,7 +426,7 @@ def download_admin_report_view(request):
 
     doc.build(elements)
     buffer.seek(0)
-    filename = f"rapport_global_donia_{timezone.now().strftime('%Y%m%d')}.pdf"
+    filename = f"rapport_global_orphelink_{timezone.now().strftime('%Y%m%d')}.pdf"
     return FileResponse(buffer, as_attachment=True, filename=filename, content_type='application/pdf')
 
 
@@ -443,7 +443,7 @@ def download_backup_view(request):
     call_command('dumpdata', 'accounts', 'donations', indent=2, stdout=buffer)
     data = buffer.getvalue()
 
-    filename = f"sauvegarde_donia_{timezone.now().strftime('%Y%m%d_%H%M')}.json"
+    filename = f"sauvegarde_orphelink_{timezone.now().strftime('%Y%m%d_%H%M')}.json"
     response = HttpResponse(data, content_type='application/json')
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response

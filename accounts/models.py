@@ -6,7 +6,7 @@ from django.db import models
 
 class User(AbstractUser):
     """
-    Modèle utilisateur personnalisé avec gestion RBAC pour la plateforme DONIA.
+    Modèle utilisateur personnalisé avec gestion RBAC pour la plateforme Orphelink.
     """
     class Role(models.TextChoices):
         ADMIN = 'admin', 'Administrateur'

@@ -1,5 +1,5 @@
 """
-ASGI config for donia project.
+ASGI config for orphelink project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'donia.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'orphelink.settings')
 
 application = get_asgi_application()

@@ -448,7 +448,7 @@ def download_report_view(request):
     section_style = ParagraphStyle('SectionDonia', parent=styles['Heading2'], textColor=rl_colors.HexColor('#0f172a'), fontSize=12, spaceBefore=12, spaceAfter=6)
 
     elements = [
-        Paragraph("DONIA — Rapport d'activité", title_style),
+        Paragraph("Orphelink — Rapport d'activité", title_style),
         Paragraph(
             f"{user.orphanage_name or user.get_full_name() or user.username} — "
             f"généré le {timezone.now().strftime('%d/%m/%Y à %H:%M')}",
@@ -525,5 +525,5 @@ def download_report_view(request):
     doc.build(elements)
     buffer.seek(0)
 
-    filename = f"rapport_donia_{timezone.now().strftime('%Y%m%d')}.pdf"
+    filename = f"rapport_orphelink_{timezone.now().strftime('%Y%m%d')}.pdf"
     return FileResponse(buffer, as_attachment=True, filename=filename, content_type='application/pdf')

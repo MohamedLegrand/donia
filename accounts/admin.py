@@ -14,7 +14,7 @@ class CustomUserAdmin(UserAdmin):
     ordering = ('-date_joined',)
     
     fieldsets = UserAdmin.fieldsets + (
-        ('Informations Rôle & DONIA', {
+        ('Informations Rôle & Orphelink', {
             'fields': (
                 'role', 'phone', 'address', 'profile_picture', 
                 'is_approved', 'orphanage_name', 'orphanage_document'
@@ -23,7 +23,7 @@ class CustomUserAdmin(UserAdmin):
     )
 
     add_fieldsets = UserAdmin.add_fieldsets + (
-        ('Informations Rôle & DONIA', {
+        ('Informations Rôle & Orphelink', {
             'fields': (
                 'email', 'role', 'phone', 'address', 
                 'is_approved', 'orphanage_name'

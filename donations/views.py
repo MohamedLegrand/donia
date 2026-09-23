@@ -261,7 +261,7 @@ def download_receipt_view(request, pk):
     p.rect(0, height - 25 * mm, width, 25 * mm, fill=1, stroke=0)
     p.setFillColor(colors.white)
     p.setFont('Helvetica-Bold', 20)
-    p.drawString(20 * mm, height - 16 * mm, "DONIA")
+    p.drawString(20 * mm, height - 16 * mm, "Orphelink")
     p.setFont('Helvetica', 10)
     p.drawString(20 * mm, height - 21 * mm, "Plateforme de Gestion des Besoins et Dons des Orphelinats")
 
@@ -301,7 +301,7 @@ def download_receipt_view(request, pk):
 
     p.setFont('Helvetica-Oblique', 8)
     p.setFillColor(light)
-    p.drawString(20 * mm, 20 * mm, "Ce document atteste de votre contribution solidaire via la plateforme DONIA.")
+    p.drawString(20 * mm, 20 * mm, "Ce document atteste de votre contribution solidaire via la plateforme Orphelink.")
     p.drawString(20 * mm, 15 * mm, "Document généré automatiquement — ne nécessite pas de signature.")
 
     p.showPage()
